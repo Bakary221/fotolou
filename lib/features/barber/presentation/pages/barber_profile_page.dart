@@ -4,19 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
 import 'package:fotolou/core/dependency_injection/providers.dart';
-import 'package:fotolou/features/client/presentation/widgets/client_bottom_nav.dart';
+import 'package:fotolou/features/barber/presentation/widgets/barber_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
 import 'package:go_router/go_router.dart';
 
-abstract final class ClientProfileTokens {
-  static const pageKey = Key('client_profile_page');
-  static const avatarKey = Key('client_profile_avatar');
-  static const settingsGroupKey = Key('client_profile_settings_group');
-  static const logoutButtonKey = Key('client_profile_logout_button');
+abstract final class BarberProfileTokens {
+  static const pageKey = Key('barber_profile_page');
+  static const avatarKey = Key('barber_profile_avatar');
+  static const subscriptionCardKey = Key('barber_profile_subscription_card');
+  static const statsLinkKey = Key('barber_profile_stats_link');
+  static const settingsGroupKey = Key('barber_profile_settings_group');
+  static const logoutButtonKey = Key('barber_profile_logout_button');
 }
 
-class ClientProfilePage extends ConsumerWidget {
-  const ClientProfilePage({super.key});
+class BarberProfilePage extends ConsumerWidget {
+  const BarberProfilePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +31,7 @@ class ClientProfilePage extends ConsumerWidget {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        key: ClientProfileTokens.pageKey,
+        key: BarberProfileTokens.pageKey,
         backgroundColor: AppColors.white,
         body: SafeArea(
           bottom: false,
@@ -44,13 +46,15 @@ class ClientProfilePage extends ConsumerWidget {
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(26, 34, 26, 42),
+                      padding: const EdgeInsets.fromLTRB(20, 32, 20, 42),
                       child: Column(
                         children: [
                           const _ProfileHeader(),
-                          const SizedBox(height: 31),
-                          const _ProfileStats(),
-                          const SizedBox(height: 50),
+                          const SizedBox(height: 18),
+                          const _SubscriptionCard(),
+                          const SizedBox(height: 32),
+                          const _StatsLink(),
+                          const SizedBox(height: 16),
                           const _SettingsGroup(),
                           const SizedBox(height: 62),
                           _LogoutButton(onPressed: () => _logout(context, ref)),
@@ -58,7 +62,7 @@ class ClientProfilePage extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const ClientBottomNav(activeIndex: 2),
+                  const BarberBottomNav(activeIndex: 2),
                 ],
               ),
             ),
@@ -84,19 +88,19 @@ class _ProfileHeader extends StatelessWidget {
     return const Column(
       children: [
         _ProfileAvatar(),
-        SizedBox(height: 12),
+        SizedBox(height: 24),
         Text(
           'BAKARY',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Color(0xFF334155),
+            color: Colors.black,
             fontFamily: 'Inter',
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            height: 32 / 24,
+            height: 20 / 24,
           ),
         ),
-        SizedBox(height: 9),
+        SizedBox(height: 16),
         Text(
           '+221 77 862 70 52',
           textAlign: TextAlign.center,
@@ -119,7 +123,7 @@ class _ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      key: ClientProfileTokens.avatarKey,
+      key: BarberProfileTokens.avatarKey,
       width: 98,
       height: 98,
       alignment: Alignment.center,
@@ -134,76 +138,97 @@ class _ProfileAvatar extends StatelessWidget {
           fontFamily: 'Inter',
           fontSize: 24,
           fontWeight: FontWeight.w700,
-          height: 32 / 24,
+          height: 20 / 24,
         ),
       ),
     );
   }
 }
 
-class _ProfileStats extends StatelessWidget {
-  const _ProfileStats();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        Expanded(
-          child: _StatCard(label: 'TICKETS', value: '45'),
-        ),
-        SizedBox(width: 20),
-        Expanded(
-          child: _StatCard(label: 'SERVIE', value: '38'),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value});
-
-  final String label;
-  final String value;
+class _SubscriptionCard extends StatelessWidget {
+  const _SubscriptionCard();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 95,
-      alignment: Alignment.center,
+      key: BarberProfileTokens.subscriptionCardKey,
+      height: 72,
       decoration: BoxDecoration(
         color: AppColors.white,
-        border: Border.all(color: const Color(0xFF334155)),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF334155),
-              fontFamily: 'Inter',
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              height: 18 / 15,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF334155),
-              fontFamily: 'Inter',
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-              height: 28 / 24,
-            ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 20,
+            offset: Offset(0, 4),
           ),
         ],
       ),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: AppColors.primary,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Abonnement',
+                  style: TextStyle(
+                    color: Color(0xFF334155),
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    height: 20 / 16,
+                  ),
+                ),
+                Text(
+                  'Premium',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    height: 16 / 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.star_rounded, color: AppColors.accent, size: 22),
+          const SizedBox(width: 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatsLink extends StatelessWidget {
+  const _StatsLink();
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileLink(
+      key: BarberProfileTokens.statsLinkKey,
+      icon: Icons.bar_chart_rounded,
+      label: 'Statistiques',
+      standalone: true,
+      onTap: () {},
     );
   }
 }
@@ -214,56 +239,72 @@ class _SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      key: ClientProfileTokens.settingsGroupKey,
+      key: BarberProfileTokens.settingsGroupKey,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
+            color: Color(0x08000000),
+            blurRadius: 20,
+            offset: Offset(0, 4),
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         children: [
-          _SettingsRow(icon: Icons.settings_outlined, label: 'Paramètres'),
-          Divider(height: 1, color: AppColors.gray50),
-          _SettingsRow(icon: Icons.info_outline, label: 'Aide & Support'),
+          _ProfileLink(
+            icon: Icons.settings_outlined,
+            label: 'Paramètres',
+            onTap: () {},
+          ),
+          const Divider(height: 1, color: AppColors.gray50),
+          _ProfileLink(
+            icon: Icons.info_outline,
+            label: 'Aide & Support',
+            onTap: () {},
+          ),
         ],
       ),
     );
   }
 }
 
-class _SettingsRow extends StatelessWidget {
-  const _SettingsRow({required this.icon, required this.label});
+class _ProfileLink extends StatelessWidget {
+  const _ProfileLink({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.standalone = false,
+    super.key,
+  });
 
   final IconData icon;
   final String label;
+  final VoidCallback onTap;
+  final bool standalone;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    final child = Material(
       color: AppColors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {},
+        onTap: onTap,
         child: SizedBox(
-          height: 58,
+          height: 56,
           child: Row(
             children: [
               const SizedBox(width: 16),
-              Icon(icon, color: AppColors.slate500, size: 20),
-              const SizedBox(width: 12),
+              Icon(icon, color: AppColors.slate800, size: 24),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppColors.slate800,
+                    color: Color(0xFF334155),
                     fontFamily: 'Inter',
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -282,6 +323,18 @@ class _SettingsRow extends StatelessWidget {
         ),
       ),
     );
+
+    if (!standalone) {
+      return child;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: child,
+    );
   }
 }
 
@@ -293,7 +346,7 @@ class _LogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      key: ClientProfileTokens.logoutButtonKey,
+      key: BarberProfileTokens.logoutButtonKey,
       width: 200,
       height: 48,
       child: TextButton.icon(
@@ -309,7 +362,7 @@ class _LogoutButton extends StatelessWidget {
           textStyle: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 16,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             height: 24 / 16,
           ),
         ),

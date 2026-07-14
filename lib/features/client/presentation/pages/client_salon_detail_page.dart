@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
-import 'package:fotolou/features/client/presentation/pages/client_tickets_page.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
+import 'package:go_router/go_router.dart';
 
 abstract final class ClientSalonDetailTokens {
   static const backButtonKey = Key('client_salon_detail_back_button');
@@ -34,10 +35,6 @@ class ClientSalonDetailPage extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 440),
               child: const Column(
                 children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: AppTopHeader(showLocation: false),
-                  ),
                   Expanded(
                     child: SingleChildScrollView(child: _SalonDetailContent()),
                   ),
@@ -125,7 +122,13 @@ class _SalonHero extends StatelessWidget {
           Positioned(
             left: 16,
             top: 48,
-            child: _BackButton(onTap: () => Navigator.of(context).maybePop()),
+            child: _BackButton(onTap: () => _goBack(context)),
+          ),
+          const Positioned(
+            left: 16,
+            right: 16,
+            top: 46,
+            child: AppTopHeader(showLocation: false),
           ),
           Positioned(
             left: 0,
@@ -153,6 +156,15 @@ class _SalonHero extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.goNamed(AppRoute.clientHome.name);
   }
 }
 
@@ -402,9 +414,7 @@ class _TicketButton extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(30),
             onTap: () {
-              Navigator.of(context).push<void>(
-                MaterialPageRoute(builder: (_) => const ClientTicketsPage()),
-              );
+              context.goNamed(AppRoute.clientTickets.name);
             },
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,

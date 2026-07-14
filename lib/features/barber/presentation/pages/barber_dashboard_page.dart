@@ -1,9 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/features/barber/presentation/widgets/barber_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
 
-class BarberDashboardPage extends StatelessWidget {
+abstract final class BarberDashboardTokens {
+  static const statusToggleKey = Key('barber_dashboard_status_toggle');
+}
+
+class BarberDashboardPage extends StatefulWidget {
   const BarberDashboardPage({super.key});
+
+  @override
+  State<BarberDashboardPage> createState() => _BarberDashboardPageState();
+}
+
+class _BarberDashboardPageState extends State<BarberDashboardPage> {
+  var _isSalonOpen = true;
+
+  void _toggleSalonStatus() {
+    setState(() {
+      _isSalonOpen = !_isSalonOpen;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,19 +32,22 @@ class BarberDashboardPage extends StatelessWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
-            child: const Column(
+            child: Column(
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(20, 24, 20, 24),
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        AppTopHeader(showLocation: false),
-                        SizedBox(height: 45),
-                        _WaitingHeroCard(),
-                        SizedBox(height: 45),
-                        Row(
+                        const AppTopHeader(showLocation: false),
+                        const SizedBox(height: 45),
+                        _WaitingHeroCard(
+                          isSalonOpen: _isSalonOpen,
+                          onStatusTap: _toggleSalonStatus,
+                        ),
+                        const SizedBox(height: 45),
+                        const Row(
                           children: [
                             Expanded(
                               child: _BarberMetricCard(
@@ -47,7 +68,7 @@ class BarberDashboardPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                _BarberBottomNav(),
+                const BarberBottomNav(activeIndex: 0),
               ],
             ),
           ),
@@ -58,7 +79,13 @@ class BarberDashboardPage extends StatelessWidget {
 }
 
 class _WaitingHeroCard extends StatelessWidget {
-  const _WaitingHeroCard();
+  const _WaitingHeroCard({
+    required this.isSalonOpen,
+    required this.onStatusTap,
+  });
+
+  final bool isSalonOpen;
+  final VoidCallback onStatusTap;
 
   @override
   Widget build(BuildContext context) {
@@ -125,33 +152,75 @@ class _WaitingHeroCard extends StatelessWidget {
                 ),
               ),
             ),
-            const Positioned(
-              right: 29,
-              top: 44,
-              child: Text(
-                'Ouvert',
-                style: TextStyle(
-                  color: Color(0xFF17FE17),
-                  fontFamily: 'Inter',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w300,
-                  height: 20 / 16,
-                ),
-              ),
-            ),
             Positioned(
               right: 25,
-              bottom: 58,
-              child: Container(
+              top: 44,
+              child: _SalonStatusToggle(
+                isOpen: isSalonOpen,
+                onTap: onStatusTap,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SalonStatusToggle extends StatelessWidget {
+  const _SalonStatusToggle({required this.isOpen, required this.onTap});
+
+  final bool isOpen;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = isOpen ? const Color(0xFF22C55E) : AppColors.danger;
+    final labelColor = isOpen
+        ? const Color(0xFF17FE17)
+        : const Color(0xFFFCA5A5);
+
+    return Semantics(
+      button: true,
+      label: isOpen ? 'Fermer le salon' : 'Ouvrir le salon',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: SizedBox(
+          width: 78,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Text(
+                  isOpen ? 'Ouvert' : 'Fermé',
+                  style: TextStyle(
+                    color: labelColor,
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w300,
+                    height: 20 / 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              AnimatedContainer(
+                key: BarberDashboardTokens.statusToggleKey,
+                duration: const Duration(milliseconds: 180),
                 width: 70,
                 height: 30,
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF22C55E),
+                  color: statusColor,
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: Align(
-                  alignment: Alignment.centerRight,
+                child: AnimatedAlign(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  alignment: isOpen
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     width: 27,
                     decoration: BoxDecoration(
@@ -168,8 +237,8 @@ class _WaitingHeroCard extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -210,81 +279,6 @@ class _BarberMetricCard extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 32,
               fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BarberBottomNav extends StatelessWidget {
-  const _BarberBottomNav();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border(top: BorderSide(color: AppColors.gray100)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 69,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _BarberBottomNavItem(
-                icon: Icons.home_rounded,
-                label: 'Accueil',
-                isActive: true,
-              ),
-              _BarberBottomNavItem(
-                icon: Icons.shopping_bag_outlined,
-                label: 'Mes tickets',
-              ),
-              _BarberBottomNavItem(icon: Icons.person_outline, label: 'Profil'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BarberBottomNavItem extends StatelessWidget {
-  const _BarberBottomNavItem({
-    required this.icon,
-    required this.label,
-    this.isActive = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool isActive;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isActive ? AppColors.primary : AppColors.mutedInk;
-
-    return SizedBox(
-      width: 82,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontFamily: 'Inter',
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              height: 16 / 12,
             ),
           ),
         ],

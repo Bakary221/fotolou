@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
-import 'package:fotolou/features/client/presentation/pages/client_profile_page.dart';
 import 'package:fotolou/features/client/presentation/widgets/client_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
 
@@ -66,19 +65,7 @@ class _ClientTicketsPageState extends State<ClientTicketsPage> {
                       ),
                     ),
                   ),
-                  ClientBottomNav(
-                    activeIndex: 1,
-                    onHomeTap: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                    onProfileTap: () {
-                      Navigator.of(context).push<void>(
-                        MaterialPageRoute(
-                          builder: (_) => const ClientProfilePage(),
-                        ),
-                      );
-                    },
-                  ),
+                  const ClientBottomNav(activeIndex: 1),
                 ],
               ),
             ),
