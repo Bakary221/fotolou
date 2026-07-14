@@ -9,6 +9,8 @@ import 'package:fotolou/app/theme/app_theme.dart';
 import 'package:fotolou/core/dependency_injection/providers.dart';
 import 'package:fotolou/core/storage/local_storage.dart';
 import 'package:fotolou/features/barber/presentation/pages/barber_dashboard_page.dart';
+import 'package:fotolou/features/barber/presentation/pages/barber_profile_page.dart';
+import 'package:fotolou/features/barber/presentation/pages/barber_tickets_page.dart';
 import 'package:fotolou/features/client/presentation/pages/client_home_page.dart';
 import 'package:fotolou/features/client/presentation/pages/client_profile_page.dart';
 import 'package:fotolou/features/client/presentation/pages/client_salon_detail_page.dart';
@@ -17,6 +19,7 @@ import 'package:fotolou/features/onboarding/presentation/pages/onboarding_page.d
 import 'package:fotolou/features/onboarding/presentation/pages/otp_verification_page.dart';
 import 'package:fotolou/features/onboarding/presentation/pages/phone_login_page.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/onboarding_assets.dart';
+import 'package:fotolou/shared/widgets/app_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
 import 'package:go_router/go_router.dart';
 
@@ -189,9 +192,12 @@ void main() {
     await _pumpPage(tester, const ClientHomePage(), const Size(440, 568));
 
     final searchField = find.byKey(ClientHomeTokens.searchFieldKey);
+    final sectionHeader = find.byKey(ClientHomeTokens.sectionHeaderKey);
     final initialTop = tester.getTopLeft(searchField).dy;
+    final initialSectionTop = tester.getTopLeft(sectionHeader).dy;
 
     expect(find.text('Dakar, Sénégal'), findsOneWidget);
+    expect(find.text('Salons proches'), findsOneWidget);
 
     await tester.drag(
       find.byType(SingleChildScrollView),
@@ -200,7 +206,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.getTopLeft(searchField).dy, initialTop);
+    expect(tester.getTopLeft(sectionHeader).dy, initialSectionTop);
     expect(find.text('Rechercher un salon'), findsOneWidget);
+    expect(find.text('Voir tout'), findsOneWidget);
   });
 
   testWidgets('tapping a salon opens the client salon detail page', (
@@ -217,6 +225,25 @@ void main() {
     expect(find.byKey(AppTopHeaderTokens.headerKey), findsOneWidget);
     expect(find.text('Dakar, Sénégal'), findsNothing);
     expect(find.byKey(ClientSalonDetailTokens.backButtonKey), findsOneWidget);
+    final heroTop = tester
+        .getTopLeft(find.byKey(ClientSalonDetailTokens.heroKey))
+        .dy;
+    final heroBottom = tester
+        .getBottomRight(find.byKey(ClientSalonDetailTokens.heroKey))
+        .dy;
+    final headerTop = tester
+        .getTopLeft(find.byKey(AppTopHeaderTokens.headerKey))
+        .dy;
+    final backCenterY = tester
+        .getCenter(find.byKey(ClientSalonDetailTokens.backButtonKey))
+        .dy;
+    final notificationCenterY = tester
+        .getCenter(find.byKey(AppTopHeaderTokens.notificationButtonKey))
+        .dy;
+
+    expect(headerTop, greaterThanOrEqualTo(heroTop));
+    expect(headerTop, lessThan(heroBottom));
+    expect(notificationCenterY, closeTo(backCenterY, 2));
     expect(find.text('King Barber'), findsOneWidget);
     expect(find.text('Prendre mon ticket'), findsOneWidget);
     expect(find.text('Mes tickets'), findsNothing);
@@ -267,6 +294,11 @@ void main() {
 
     expect(find.byKey(ClientTicketsTokens.pageKey), findsOneWidget);
     expect(find.byKey(ClientTicketsTokens.progressKey), findsOneWidget);
+
+    await tester.tap(find.text('Accueil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Salons proches'), findsOneWidget);
   });
 
   testWidgets('client profile page opens from bottom navigation', (
@@ -297,6 +329,39 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Salons proches'), findsOneWidget);
+  });
+
+  testWidgets('client bottom menu switches between every client section', (
+    tester,
+  ) async {
+    final router = _clientRouter(initialLocation: AppRoute.clientTickets.path);
+    addTearDown(router.dispose);
+
+    await _pumpRouter(tester, router, const Size(440, 956));
+
+    expect(find.byKey(AppBottomNavTokens.navKey), findsOneWidget);
+    expect(find.byKey(ClientTicketsTokens.pageKey), findsOneWidget);
+    expect(find.text('M O N  T O U R'), findsOneWidget);
+
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(ClientProfileTokens.pageKey), findsOneWidget);
+    expect(find.text('BAKARY'), findsOneWidget);
+    expect(find.text('M O N  T O U R'), findsNothing);
+
+    await tester.tap(find.text('Mes tickets'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(ClientTicketsTokens.pageKey), findsOneWidget);
+    expect(find.text('M O N  T O U R'), findsOneWidget);
+    expect(find.text('BAKARY'), findsNothing);
+
+    await tester.tap(find.text('Accueil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Salons proches'), findsOneWidget);
+    expect(find.text('Dakar, Sénégal'), findsOneWidget);
   });
 
   testWidgets('visible actions move through onboarding, phone, and otp pages', (
@@ -388,9 +453,79 @@ void main() {
     await _tapVisibleText(tester, 'verifier');
 
     expect(find.text('CLIENTS EN ATTENTE'), findsOneWidget);
+    expect(find.text('Ouvert'), findsOneWidget);
     expect(find.byKey(AppTopHeaderTokens.headerKey), findsOneWidget);
     expect(find.text('Dakar, Sénégal'), findsNothing);
     expect(find.text('SERVIS'), findsOneWidget);
+  });
+
+  testWidgets('barber menu opens tickets tabs and profile workflow', (
+    tester,
+  ) async {
+    final router = _barberRouter();
+    addTearDown(router.dispose);
+
+    await _pumpRouter(tester, router, const Size(440, 956));
+
+    expect(find.text('CLIENTS EN ATTENTE'), findsOneWidget);
+    expect(find.text('SERVIS'), findsOneWidget);
+    expect(find.text('Ouvert'), findsOneWidget);
+    final openToggle = tester.widget<AnimatedContainer>(
+      find.byKey(BarberDashboardTokens.statusToggleKey),
+    );
+    final openDecoration = openToggle.decoration! as BoxDecoration;
+    expect(openDecoration.color, const Color(0xFF22C55E));
+
+    await tester.tap(find.byKey(BarberDashboardTokens.statusToggleKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fermé'), findsOneWidget);
+    expect(find.text('Ouvert'), findsNothing);
+    final closedToggle = tester.widget<AnimatedContainer>(
+      find.byKey(BarberDashboardTokens.statusToggleKey),
+    );
+    final closedDecoration = closedToggle.decoration! as BoxDecoration;
+    expect(closedDecoration.color, AppColors.danger);
+
+    await tester.tap(find.text('Mes tickets'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(BarberTicketsTokens.pageKey), findsOneWidget);
+    expect(find.text('File en direct'), findsOneWidget);
+    expect(find.text('Amadou Koulibaly'), findsOneWidget);
+    expect(find.text('En cours'), findsOneWidget);
+    expect(find.text('Sauter'), findsWidgets);
+    expect(find.text('Servi'), findsWidgets);
+    expect(find.byKey(BarberTicketsTokens.addClientButtonKey), findsOneWidget);
+
+    await tester.tap(find.text('Historiques'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(BarberTicketsTokens.historyListKey), findsOneWidget);
+    expect(find.text('Passages recents'), findsOneWidget);
+    expect(find.text('Awa Diop'), findsOneWidget);
+    expect(find.text('Cheikh Fall'), findsOneWidget);
+    expect(find.text('ANNULÉ'), findsOneWidget);
+    expect(find.text('SERVI'), findsWidgets);
+    expect(find.byKey(BarberTicketsTokens.addClientButtonKey), findsNothing);
+
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(BarberProfileTokens.pageKey), findsOneWidget);
+    expect(find.byKey(BarberProfileTokens.avatarKey), findsOneWidget);
+    expect(find.text('BAKARY'), findsOneWidget);
+    expect(find.text('Abonnement'), findsOneWidget);
+    expect(find.text('Premium'), findsOneWidget);
+    expect(find.text('Statistiques'), findsOneWidget);
+    expect(find.text('Paramètres'), findsOneWidget);
+    expect(find.text('Aide & Support'), findsOneWidget);
+    expect(find.text('Déconnexion'), findsOneWidget);
+
+    await tester.tap(find.text('Accueil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('CLIENTS EN ATTENTE'), findsOneWidget);
   });
 }
 
@@ -467,9 +602,9 @@ Future<void> _tapVisibleText(WidgetTester tester, String text) async {
   await tester.pumpAndSettle();
 }
 
-GoRouter _clientRouter() {
+GoRouter _clientRouter({String? initialLocation}) {
   return GoRouter(
-    initialLocation: AppRoute.clientHome.path,
+    initialLocation: initialLocation ?? AppRoute.clientHome.path,
     routes: [
       GoRoute(
         path: AppRoute.clientHome.path,
@@ -519,6 +654,29 @@ GoRouter _phoneAuthRouter() {
         path: AppRoute.barberHome.path,
         name: AppRoute.barberHome.name,
         builder: (context, state) => const BarberDashboardPage(),
+      ),
+    ],
+  );
+}
+
+GoRouter _barberRouter() {
+  return GoRouter(
+    initialLocation: AppRoute.barberHome.path,
+    routes: [
+      GoRoute(
+        path: AppRoute.barberHome.path,
+        name: AppRoute.barberHome.name,
+        builder: (context, state) => const BarberDashboardPage(),
+      ),
+      GoRoute(
+        path: AppRoute.barberTickets.path,
+        name: AppRoute.barberTickets.name,
+        builder: (context, state) => const BarberTicketsPage(),
+      ),
+      GoRoute(
+        path: AppRoute.barberProfile.path,
+        name: AppRoute.barberProfile.name,
+        builder: (context, state) => const BarberProfilePage(),
       ),
     ],
   );

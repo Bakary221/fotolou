@@ -8,6 +8,8 @@ enum AppRoute {
   clientProfile('/client/profile'),
   clientSalonDetail('/client/salon'),
   barberHome('/barber'),
+  barberTickets('/barber/tickets'),
+  barberProfile('/barber/profile'),
   home('/'),
   login('/login');
 

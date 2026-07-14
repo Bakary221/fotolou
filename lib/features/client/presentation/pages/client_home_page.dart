@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
 import 'package:fotolou/core/dependency_injection/providers.dart';
-import 'package:fotolou/features/client/presentation/pages/client_profile_page.dart';
-import 'package:fotolou/features/client/presentation/pages/client_salon_detail_page.dart';
-import 'package:fotolou/features/client/presentation/pages/client_tickets_page.dart';
 import 'package:fotolou/features/client/presentation/widgets/client_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
+import 'package:go_router/go_router.dart';
 
 abstract final class ClientHomeTokens {
   static const searchFieldKey = Key('client_home_search_field');
+  static const sectionHeaderKey = Key('client_home_section_header');
 
   static Key salonItemKey(int index) => ValueKey('client_salon_item_$index');
 }
@@ -43,6 +43,10 @@ class ClientHomePage extends ConsumerWidget {
                       _Greeting(firstName: firstName),
                       const SizedBox(height: 26),
                       const _SearchField(key: ClientHomeTokens.searchFieldKey),
+                      const SizedBox(height: 26),
+                      const _SectionHeader(
+                        key: ClientHomeTokens.sectionHeaderKey,
+                      ),
                     ],
                   ),
                 ),
@@ -52,8 +56,6 @@ class ClientHomePage extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _SectionHeader(),
-                        const SizedBox(height: 25),
                         ...List.generate(
                           4,
                           (index) => _SalonListItem(
@@ -66,11 +68,7 @@ class ClientHomePage extends ConsumerWidget {
                     ),
                   ),
                 ),
-                ClientBottomNav(
-                  activeIndex: 0,
-                  onTicketsTap: () => _openTickets(context),
-                  onProfileTap: () => _openProfile(context),
-                ),
+                const ClientBottomNav(activeIndex: 0),
               ],
             ),
           ),
@@ -80,21 +78,7 @@ class ClientHomePage extends ConsumerWidget {
   }
 
   void _openSalonDetail(BuildContext context) {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (_) => const ClientSalonDetailPage()),
-    );
-  }
-
-  void _openTickets(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push<void>(MaterialPageRoute(builder: (_) => const ClientTicketsPage()));
-  }
-
-  void _openProfile(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push<void>(MaterialPageRoute(builder: (_) => const ClientProfilePage()));
+    context.pushNamed(AppRoute.clientSalonDetail.name);
   }
 }
 
@@ -164,7 +148,7 @@ class _SearchField extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader();
+  const _SectionHeader({super.key});
 
   @override
   Widget build(BuildContext context) {

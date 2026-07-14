@@ -7,6 +7,8 @@ import 'package:fotolou/features/authentication/domain/entities/user_role.dart';
 import 'package:fotolou/features/authentication/presentation/pages/login_page.dart';
 import 'package:fotolou/features/authentication/presentation/states/auth_state.dart';
 import 'package:fotolou/features/barber/presentation/pages/barber_dashboard_page.dart';
+import 'package:fotolou/features/barber/presentation/pages/barber_profile_page.dart';
+import 'package:fotolou/features/barber/presentation/pages/barber_tickets_page.dart';
 import 'package:fotolou/features/client/presentation/pages/client_home_page.dart';
 import 'package:fotolou/features/client/presentation/pages/client_profile_page.dart';
 import 'package:fotolou/features/client/presentation/pages/client_salon_detail_page.dart';
@@ -66,6 +68,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoute.barberHome.path,
         name: AppRoute.barberHome.name,
         builder: (context, state) => const BarberDashboardPage(),
+      ),
+      GoRoute(
+        path: AppRoute.barberTickets.path,
+        name: AppRoute.barberTickets.name,
+        builder: (context, state) => const BarberTicketsPage(),
+      ),
+      GoRoute(
+        path: AppRoute.barberProfile.path,
+        name: AppRoute.barberProfile.name,
+        builder: (context, state) => const BarberProfilePage(),
       ),
       GoRoute(
         path: AppRoute.home.path,
