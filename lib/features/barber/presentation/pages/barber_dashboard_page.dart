@@ -1,77 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/features/barber/presentation/controllers/barber_dashboard_controller.dart';
 import 'package:fotolou/features/barber/presentation/widgets/barber_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
+import 'package:fotolou/shared/widgets/role_page_scaffold.dart';
 
 abstract final class BarberDashboardTokens {
   static const statusToggleKey = Key('barber_dashboard_status_toggle');
 }
 
-class BarberDashboardPage extends StatefulWidget {
+class BarberDashboardPage extends ConsumerWidget {
   const BarberDashboardPage({super.key});
 
   @override
-  State<BarberDashboardPage> createState() => _BarberDashboardPageState();
-}
-
-class _BarberDashboardPageState extends State<BarberDashboardPage> {
-  var _isSalonOpen = true;
-
-  void _toggleSalonStatus() {
-    setState(() {
-      _isSalonOpen = !_isSalonOpen;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
-        bottom: false,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSalonOpen = ref.watch(barberDashboardControllerProvider);
+    return RolePageScaffold(
+      bottomNavigationBar: const BarberBottomNav(activeIndex: 0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const AppTopHeader(showLocation: false),
+            const SizedBox(height: 45),
+            _WaitingHeroCard(
+              isSalonOpen: isSalonOpen,
+              onStatusTap: ref
+                  .read(barberDashboardControllerProvider.notifier)
+                  .toggleSalonStatus,
+            ),
+            const SizedBox(height: 45),
+            const Row(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const AppTopHeader(showLocation: false),
-                        const SizedBox(height: 45),
-                        _WaitingHeroCard(
-                          isSalonOpen: _isSalonOpen,
-                          onStatusTap: _toggleSalonStatus,
-                        ),
-                        const SizedBox(height: 45),
-                        const Row(
-                          children: [
-                            Expanded(
-                              child: _BarberMetricCard(
-                                label: 'EN ATTENTE',
-                                value: '5',
-                              ),
-                            ),
-                            SizedBox(width: 22),
-                            Expanded(
-                              child: _BarberMetricCard(
-                                label: 'SERVIS',
-                                value: '25',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: _BarberMetricCard(label: 'EN ATTENTE', value: '5'),
                 ),
-                const BarberBottomNav(activeIndex: 0),
+                SizedBox(width: 22),
+                Expanded(
+                  child: _BarberMetricCard(label: 'SERVIS', value: '25'),
+                ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -117,7 +90,7 @@ class _WaitingHeroCard extends StatelessWidget {
                 'CLIENTS EN ATTENTE',
                 style: TextStyle(
                   color: AppColors.accent,
-                  fontFamily: 'Poppins',
+                  fontFamily: AppFonts.poppins,
                   fontSize: 20,
                   fontWeight: FontWeight.w500,
                   height: 1,
@@ -131,7 +104,7 @@ class _WaitingHeroCard extends StatelessWidget {
                 '12',
                 style: TextStyle(
                   color: AppColors.white,
-                  fontFamily: 'Poppins',
+                  fontFamily: AppFonts.poppins,
                   fontSize: 48,
                   fontWeight: FontWeight.w700,
                   height: 20 / 48,
@@ -145,7 +118,7 @@ class _WaitingHeroCard extends StatelessWidget {
                 '↑ +18% vs hier',
                 style: TextStyle(
                   color: AppColors.accent,
-                  fontFamily: 'Poppins',
+                  fontFamily: AppFonts.poppins,
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   height: 20 / 16,
@@ -175,10 +148,10 @@ class _SalonStatusToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = isOpen ? const Color(0xFF22C55E) : AppColors.danger;
+    final statusColor = isOpen ? AppColors.toggleGreen : AppColors.danger;
     final labelColor = isOpen
-        ? const Color(0xFF17FE17)
-        : const Color(0xFFFCA5A5);
+        ? AppColors.toggleLabelGreen
+        : AppColors.toggleLabelRed;
 
     return Semantics(
       button: true,
@@ -197,7 +170,7 @@ class _SalonStatusToggle extends StatelessWidget {
                   isOpen ? 'Ouvert' : 'Fermé',
                   style: TextStyle(
                     color: labelColor,
-                    fontFamily: 'Inter',
+                    fontFamily: AppFonts.inter,
                     fontSize: 16,
                     fontWeight: FontWeight.w300,
                     height: 20 / 16,
@@ -228,7 +201,7 @@ class _SalonStatusToggle extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x1A000000),
+                          color: AppColors.shadowBlack10,
                           blurRadius: 6,
                           offset: Offset(0, 2),
                         ),
@@ -257,7 +230,7 @@ class _BarberMetricCard extends StatelessWidget {
       height: 95,
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 10),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF808080)),
+        border: Border.all(color: AppColors.textSoft),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -266,8 +239,8 @@ class _BarberMetricCard extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              color: Color(0xFF484C52),
-              fontFamily: 'Inter',
+              color: AppColors.textMetric,
+              fontFamily: AppFonts.inter,
               fontSize: 12,
               fontWeight: FontWeight.w300,
             ),
@@ -275,8 +248,8 @@ class _BarberMetricCard extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              color: Colors.black,
-              fontFamily: 'Poppins',
+              color: AppColors.black,
+              fontFamily: AppFonts.poppins,
               fontSize: 32,
               fontWeight: FontWeight.w700,
             ),

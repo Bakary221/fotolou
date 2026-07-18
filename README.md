@@ -54,6 +54,13 @@ La couche `domain` ne connaît ni Dio, ni Flutter, ni stockage local. Les contra
 
 ## Commandes
 
+Le projet est aligné sur Flutter `3.38.3` (Dart `3.10.1`). Avec FVM :
+
+```bash
+fvm install
+fvm flutter pub get
+```
+
 Installation :
 
 ```bash

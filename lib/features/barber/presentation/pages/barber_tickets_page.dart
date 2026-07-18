@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/features/barber/presentation/controllers/barber_tickets_controller.dart';
 import 'package:fotolou/features/barber/presentation/widgets/barber_bottom_nav.dart';
+import 'package:fotolou/shared/widgets/app_segmented_control.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
+import 'package:fotolou/shared/widgets/role_page_scaffold.dart';
+import 'package:fotolou/shared/widgets/ticket_history_card.dart';
 
 abstract final class BarberTicketsTokens {
   static const pageKey = Key('barber_tickets_page');
@@ -13,192 +18,77 @@ abstract final class BarberTicketsTokens {
   static const addClientButtonKey = Key('barber_tickets_add_client_button');
 }
 
-enum _BarberTicketView { current, history }
-
-class BarberTicketsPage extends StatefulWidget {
+class BarberTicketsPage extends ConsumerWidget {
   const BarberTicketsPage({super.key});
 
   @override
-  State<BarberTicketsPage> createState() => _BarberTicketsPageState();
-}
-
-class _BarberTicketsPageState extends State<BarberTicketsPage> {
-  _BarberTicketView _view = _BarberTicketView.current;
-
-  void _selectView(_BarberTicketView view) {
-    setState(() {
-      _view = view;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: AppColors.white,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: AppColors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        key: BarberTicketsTokens.pageKey,
-        backgroundColor: AppColors.white,
-        body: SafeArea(
-          bottom: false,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Column(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: AppTopHeader(showLocation: false),
-                  ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
-                              child: _BarberTicketTabs(
-                                view: _view,
-                                onViewChanged: _selectView,
-                              ),
-                            ),
-                            const SizedBox(height: 43),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                              ),
-                              child: _TicketSectionHeader(
-                                title: _view == _BarberTicketView.current
-                                    ? 'File en direct'
-                                    : 'Passages recents',
-                              ),
-                            ),
-                            const SizedBox(height: 22),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                padding: const EdgeInsets.fromLTRB(
-                                  20,
-                                  0,
-                                  20,
-                                  96,
-                                ),
-                                child: _view == _BarberTicketView.current
-                                    ? const _LiveQueueList()
-                                    : const _HistoryList(),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (_view == _BarberTicketView.current)
-                          const Positioned(
-                            right: 12,
-                            bottom: 20,
-                            child: _AddClientButton(),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const BarberBottomNav(activeIndex: 1),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BarberTicketTabs extends StatelessWidget {
-  const _BarberTicketTabs({required this.view, required this.onViewChanged});
-
-  final _BarberTicketView view;
-  final ValueChanged<_BarberTicketView> onViewChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: AppColors.gray200,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Row(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final view = ref.watch(barberTicketsControllerProvider);
+    return RolePageScaffold(
+      key: BarberTicketsTokens.pageKey,
+      bottomNavigationBar: const BarberBottomNav(activeIndex: 1),
+      body: Column(
         children: [
-          Expanded(
-            child: _BarberTicketTab(
-              key: BarberTicketsTokens.currentTabKey,
-              label: 'Actuel',
-              isActive: view == _BarberTicketView.current,
-              onTap: () => onViewChanged(_BarberTicketView.current),
-            ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+            child: AppTopHeader(showLocation: false),
           ),
           Expanded(
-            child: _BarberTicketTab(
-              key: BarberTicketsTokens.historyTabKey,
-              label: 'Historiques',
-              isActive: view == _BarberTicketView.history,
-              onTap: () => onViewChanged(_BarberTicketView.history),
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+                      child: AppSegmentedControl<BarberTicketView>(
+                        selectedValue: view,
+                        onChanged: ref
+                            .read(barberTicketsControllerProvider.notifier)
+                            .select,
+                        segments: const [
+                          AppSegment(
+                            key: BarberTicketsTokens.currentTabKey,
+                            value: BarberTicketView.current,
+                            label: 'Actuel',
+                          ),
+                          AppSegment(
+                            key: BarberTicketsTokens.historyTabKey,
+                            value: BarberTicketView.history,
+                            label: 'Historiques',
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 43),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _TicketSectionHeader(
+                        title: view == BarberTicketView.current
+                            ? 'File en direct'
+                            : 'Passages récents',
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
+                        child: view == BarberTicketView.current
+                            ? const _LiveQueueList()
+                            : const _HistoryList(),
+                      ),
+                    ),
+                  ],
+                ),
+                if (view == BarberTicketView.current)
+                  const Positioned(
+                    right: 12,
+                    bottom: 20,
+                    child: _AddClientButton(),
+                  ),
+              ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BarberTicketTab extends StatelessWidget {
-  const _BarberTicketTab({
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-    super.key,
-  });
-
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.secondary : AppColors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: isActive
-                ? const [
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isActive ? AppColors.white : AppColors.gray600,
-                fontFamily: 'Inter',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 20 / 14,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -219,8 +109,8 @@ class _TicketSectionHeader extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Color(0xFF191C1E),
-              fontFamily: 'Inter',
+              color: AppColors.textSection,
+              fontFamily: AppFonts.inter,
               fontSize: 24,
               fontWeight: FontWeight.w600,
               height: 32 / 24,
@@ -237,7 +127,7 @@ class _TicketSectionHeader extends StatelessWidget {
           'Filtrer',
           style: TextStyle(
             color: AppColors.primary,
-            fontFamily: 'Inter',
+            fontFamily: AppFonts.inter,
             fontSize: 14,
             fontWeight: FontWeight.w600,
             height: 16 / 14,
@@ -300,7 +190,7 @@ class _LiveQueueCard extends StatelessWidget {
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: AppColors.white,
-        border: Border.all(color: const Color(0xFFC3C5D9)),
+        border: Border.all(color: AppColors.queueBorder),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -319,8 +209,8 @@ class _LiveQueueCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF191C1E),
-                        fontFamily: 'Inter',
+                        color: AppColors.textSection,
+                        fontFamily: AppFonts.inter,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         height: 28 / 18,
@@ -331,8 +221,8 @@ class _LiveQueueCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF434656),
-                        fontFamily: 'Inter',
+                        color: AppColors.textQueue,
+                        fontFamily: AppFonts.inter,
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         height: 20 / 14,
@@ -361,8 +251,8 @@ class _LiveQueueCard extends StatelessWidget {
                 child: _QueueActionButton(
                   label: 'Servi',
                   backgroundColor: AppColors.white,
-                  foregroundColor: Color(0xFF005E32),
-                  borderColor: Color(0xFF005E32),
+                  foregroundColor: AppColors.actionGreen,
+                  borderColor: AppColors.actionGreen,
                 ),
               ),
               SizedBox(width: 12),
@@ -387,14 +277,14 @@ class _QueueNumberBadge extends StatelessWidget {
       height: 48,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFFECEEF0),
+        color: AppColors.neutralSurface,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         number,
         style: const TextStyle(
           color: AppColors.primary,
-          fontFamily: 'Inter',
+          fontFamily: AppFonts.inter,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           height: 28 / 20,
@@ -415,7 +305,7 @@ class _LiveStatusBadge extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isCurrent ? const Color(0xFF007943) : const Color(0xFFECEEF0),
+        color: isCurrent ? AppColors.currentGreen : AppColors.neutralSurface,
         borderRadius: BorderRadius.circular(9999),
       ),
       child: Padding(
@@ -423,8 +313,8 @@ class _LiveStatusBadge extends StatelessWidget {
         child: Text(
           isCurrent ? 'En cours' : 'En Attente',
           style: TextStyle(
-            color: isCurrent ? AppColors.white : const Color(0xFF484C52),
-            fontFamily: 'Inter',
+            color: isCurrent ? AppColors.white : AppColors.textMetric,
+            fontFamily: AppFonts.inter,
             fontSize: 12,
             fontWeight: FontWeight.w500,
             height: 16 / 12,
@@ -462,7 +352,7 @@ class _QueueActionButton extends StatelessWidget {
             side: BorderSide(color: borderColor),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppFonts.inter,
             fontSize: 14,
             fontWeight: FontWeight.w600,
             height: 16 / 14,
@@ -487,7 +377,7 @@ class _MoreButton extends StatelessWidget {
         onPressed: () {},
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          side: const BorderSide(color: Color(0xFFC3C5D9)),
+          side: const BorderSide(color: AppColors.queueBorder),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: EdgeInsets.zero,
         ),
@@ -501,29 +391,29 @@ class _HistoryList extends StatelessWidget {
   const _HistoryList();
 
   static const _items = [
-    _HistoryItem(
+    TicketHistoryEntry(
       initials: 'AD',
       name: 'Awa Diop',
       date: 'Hier, 14:30',
-      status: _HistoryStatus.served,
+      status: TicketHistoryStatus.served,
     ),
-    _HistoryItem(
+    TicketHistoryEntry(
       initials: 'CF',
       name: 'Cheikh Fall',
       date: '12 Oct, 10:00',
-      status: _HistoryStatus.cancelled,
+      status: TicketHistoryStatus.cancelled,
     ),
-    _HistoryItem(
+    TicketHistoryEntry(
       initials: 'MK',
       name: 'Moussa Kane',
       date: '11 Oct, 16:15',
-      status: _HistoryStatus.served,
+      status: TicketHistoryStatus.served,
     ),
-    _HistoryItem(
+    TicketHistoryEntry(
       initials: 'IS',
       name: 'Ibrahima Sow',
       date: '11 Oct, 09:45',
-      status: _HistoryStatus.served,
+      status: TicketHistoryStatus.served,
     ),
   ];
 
@@ -535,137 +425,9 @@ class _HistoryList extends StatelessWidget {
         for (final item in _items)
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: _HistoryCard(item: item),
+            child: TicketHistoryCard(entry: item),
           ),
       ],
-    );
-  }
-}
-
-class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.item});
-
-  final _HistoryItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final isServed = item.status == _HistoryStatus.served;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border.all(color: AppColors.gray100),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 6,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _HistoryAvatar(initials: item.initials, isServed: isServed),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.ink,
-                    fontFamily: 'Inter',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    height: 24 / 16,
-                  ),
-                ),
-                Text(
-                  item.date,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.gray600,
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    height: 16 / 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          _HistoryStatusBadge(status: item.status),
-        ],
-      ),
-    );
-  }
-}
-
-class _HistoryAvatar extends StatelessWidget {
-  const _HistoryAvatar({required this.initials, required this.isServed});
-
-  final String initials;
-  final bool isServed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 48,
-      height: 48,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: isServed ? const Color(0xFFEFF6FF) : AppColors.gray100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        initials,
-        style: TextStyle(
-          color: isServed ? AppColors.secondary : AppColors.gray600,
-          fontFamily: 'Inter',
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          height: 28 / 18,
-        ),
-      ),
-    );
-  }
-}
-
-class _HistoryStatusBadge extends StatelessWidget {
-  const _HistoryStatusBadge({required this.status});
-
-  final _HistoryStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final isServed = status == _HistoryStatus.served;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: isServed ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(9999),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Text(
-          isServed ? 'SERVI' : 'ANNULÉ',
-          style: TextStyle(
-            color: isServed ? AppColors.success : AppColors.danger,
-            fontFamily: 'Inter',
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            height: 15 / 10,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -706,19 +468,3 @@ class _LiveQueueItem {
 }
 
 enum _LiveQueueStatus { current, waiting }
-
-class _HistoryItem {
-  const _HistoryItem({
-    required this.initials,
-    required this.name,
-    required this.date,
-    required this.status,
-  });
-
-  final String initials;
-  final String name;
-  final String date;
-  final _HistoryStatus status;
-}
-
-enum _HistoryStatus { served, cancelled }

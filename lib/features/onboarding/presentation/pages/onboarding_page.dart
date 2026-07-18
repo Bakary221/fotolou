@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_brand_text_theme.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_system_ui.dart';
 import 'package:fotolou/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/figma_frame.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/onboarding_artwork.dart';
@@ -82,13 +83,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: AppColors.white,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: AppColors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
+      value: AppSystemUi.light,
       child: Scaffold(
         backgroundColor: AppColors.white,
         body: PageView.builder(

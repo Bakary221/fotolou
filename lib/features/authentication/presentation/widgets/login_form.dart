@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/theme/app_spacing.dart';
-import 'package:fotolou/core/dependency_injection/providers.dart';
 import 'package:fotolou/core/validators/app_validators.dart';
 import 'package:fotolou/core/widgets/app_button.dart';
 import 'package:fotolou/core/widgets/app_text_field.dart';
+import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/authentication/presentation/states/auth_state.dart';
 
 class LoginForm extends ConsumerStatefulWidget {

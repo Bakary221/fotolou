@@ -101,6 +101,31 @@ void main() {
     }
   });
 
+  testWidgets('role screens render without overflow on compact and tablet', (
+    tester,
+  ) async {
+    const pages = <Widget>[
+      ClientHomePage(),
+      ClientTicketsPage(),
+      ClientProfilePage(),
+      ClientSalonDetailPage(),
+      BarberDashboardPage(),
+      BarberTicketsPage(),
+      BarberProfilePage(),
+    ];
+
+    for (final size in _responsiveSizes) {
+      for (final page in pages) {
+        await _pumpPage(tester, page, size);
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '${page.runtimeType} at $size',
+        );
+      }
+    }
+  });
+
   testWidgets('phone country selector chevron keeps Figma size', (
     tester,
   ) async {
@@ -199,10 +224,7 @@ void main() {
     expect(find.text('Dakar, Sénégal'), findsOneWidget);
     expect(find.text('Salons proches'), findsOneWidget);
 
-    await tester.drag(
-      find.byType(SingleChildScrollView),
-      const Offset(0, -220),
-    );
+    await tester.drag(find.byType(ListView), const Offset(0, -220));
     await tester.pumpAndSettle();
 
     expect(tester.getTopLeft(searchField).dy, initialTop);
@@ -275,7 +297,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(ClientTicketsTokens.historyListKey), findsOneWidget);
-    expect(find.text('Passages recents'), findsOneWidget);
+    expect(find.text('Passages récents'), findsOneWidget);
     expect(find.text('Filtrer'), findsOneWidget);
     expect(find.text('KingBarber'), findsOneWidget);
     expect(find.text('Cheikh Fall'), findsOneWidget);
@@ -502,7 +524,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(BarberTicketsTokens.historyListKey), findsOneWidget);
-    expect(find.text('Passages recents'), findsOneWidget);
+    expect(find.text('Passages récents'), findsOneWidget);
     expect(find.text('Awa Diop'), findsOneWidget);
     expect(find.text('Cheikh Fall'), findsOneWidget);
     expect(find.text('ANNULÉ'), findsOneWidget);

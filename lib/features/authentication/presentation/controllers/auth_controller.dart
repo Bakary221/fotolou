@@ -27,8 +27,8 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   final LoginUseCase _loginUseCase;
-  final RequestPhoneOtpUseCase? _requestPhoneOtpUseCase;
-  final VerifyPhoneOtpUseCase? _verifyPhoneOtpUseCase;
+  final RequestPhoneOtpUseCase _requestPhoneOtpUseCase;
+  final VerifyPhoneOtpUseCase _verifyPhoneOtpUseCase;
   final LogoutUseCase _logoutUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
 
@@ -62,16 +62,7 @@ class AuthController extends StateNotifier<AuthState> {
   Future<bool> requestPhoneOtp({required String phone}) async {
     state = state.copyWith(status: AuthStatus.loading, clearMessage: true);
 
-    final requestPhoneOtpUseCase = _requestPhoneOtpUseCase;
-    if (requestPhoneOtpUseCase == null) {
-      state = const AuthState(
-        status: AuthStatus.error,
-        message: 'Session de debug obsolète. Relancez l’application.',
-      );
-      return false;
-    }
-
-    final result = await requestPhoneOtpUseCase(
+    final result = await _requestPhoneOtpUseCase(
       RequestPhoneOtpParams(phone: phone),
     );
 
@@ -93,16 +84,7 @@ class AuthController extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(status: AuthStatus.loading, clearMessage: true);
 
-    final verifyPhoneOtpUseCase = _verifyPhoneOtpUseCase;
-    if (verifyPhoneOtpUseCase == null) {
-      state = const AuthState(
-        status: AuthStatus.error,
-        message: 'Session de debug obsolète. Relancez l’application.',
-      );
-      return null;
-    }
-
-    final result = await verifyPhoneOtpUseCase(
+    final result = await _verifyPhoneOtpUseCase(
       VerifyPhoneOtpParams(phone: phone, otp: otp),
     );
 
