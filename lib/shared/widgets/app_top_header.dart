@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_fonts.dart';
 
 abstract final class AppTopHeaderTokens {
   static const headerKey = Key('app_top_header');
@@ -35,15 +36,15 @@ class AppTopHeader extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.location_on,
-                  color: Color(0xFFEF4444),
+                  color: AppColors.red500,
                   size: 20,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   location,
                   style: const TextStyle(
-                    color: Color(0xFF1A1A1A),
-                    fontFamily: 'Inter',
+                    color: AppColors.textStrong,
+                    fontFamily: AppFonts.inter,
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
                     height: 28 / 18,
@@ -61,10 +62,10 @@ class AppTopHeader extends StatelessWidget {
             key: AppTopHeaderTokens.notificationButtonKey,
             tooltip: 'Notifications',
             visualDensity: VisualDensity.compact,
-            onPressed: onNotificationTap ?? () {},
+            onPressed: onNotificationTap,
             icon: const Icon(
               Icons.notifications_none,
-              color: Color(0xFF374151),
+              color: AppColors.headerIcon,
               size: 24,
             ),
           ),

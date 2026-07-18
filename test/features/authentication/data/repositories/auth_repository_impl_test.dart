@@ -129,4 +129,16 @@ void main() {
       isA<UnauthorizedFailure>(),
     );
   });
+
+  test('always clears the local session when remote logout fails', () async {
+    when(
+      () => remoteDataSource.logout(),
+    ).thenThrow(const NetworkException('Réseau indisponible.'));
+    when(() => localDataSource.clearSession()).thenAnswer((_) async {});
+
+    final result = await repository.logout();
+
+    expect(result, isA<ResultFailure<void>>());
+    verify(() => localDataSource.clearSession()).called(1);
+  });
 }

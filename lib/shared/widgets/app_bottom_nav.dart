@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_fonts.dart';
 
 abstract final class AppBottomNavTokens {
   static const navKey = Key('app_bottom_nav');
@@ -98,7 +99,7 @@ class _AppBottomNavItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: color,
-                fontFamily: 'Inter',
+                fontFamily: AppFonts.inter,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 height: 16 / 12,

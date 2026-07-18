@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/theme/app_spacing.dart';
-import 'package:fotolou/core/dependency_injection/providers.dart';
 import 'package:fotolou/core/widgets/app_empty_view.dart';
 import 'package:fotolou/core/widgets/app_scaffold.dart';
+import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});

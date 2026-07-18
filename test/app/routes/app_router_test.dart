@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fotolou/app/routes/app_router.dart';
 import 'package:fotolou/core/dependency_injection/providers.dart';
 import 'package:fotolou/core/storage/local_storage.dart';
+import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 
 class MemoryLocalStorage implements LocalStorage {
   final Map<String, String> _values = <String, String>{};

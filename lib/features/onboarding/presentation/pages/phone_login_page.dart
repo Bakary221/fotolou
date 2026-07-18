@@ -5,11 +5,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_brand_text_theme.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
-import 'package:fotolou/core/dependency_injection/providers.dart';
+import 'package:fotolou/app/theme/app_system_ui.dart';
 import 'package:fotolou/core/validators/app_validators.dart';
+import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/authentication/presentation/states/auth_state.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/figma_frame.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/onboarding_assets.dart';
+import 'package:fotolou/shared/widgets/responsive_design_viewport.dart';
 import 'package:go_router/go_router.dart';
 
 abstract final class PhoneLoginTokens {
@@ -63,56 +65,53 @@ class _PhoneLoginPageState extends ConsumerState<PhoneLoginPage> {
     final authState = ref.watch(authControllerProvider);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: AppColors.white,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: AppColors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
+      value: AppSystemUi.light,
       child: Scaffold(
         backgroundColor: AppColors.white,
-        body: FigmaFrame(
-          backgroundColor: AppColors.white,
-          builder: (context, metrics) {
-            return Stack(
-              children: [
-                Positioned(
-                  left: metrics.x(PhoneLoginTokens.headerLeft),
-                  top: metrics.y(PhoneLoginTokens.headerTop),
-                  width: metrics.s(PhoneLoginTokens.headerWidth),
-                  child: _PhoneHeader(scale: metrics.scale),
-                ),
-                Positioned(
-                  left: metrics.x(PhoneLoginTokens.formLeft),
-                  top: metrics.y(PhoneLoginTokens.formTop),
-                  width: metrics.s(PhoneLoginTokens.formWidth),
-                  child: _PhoneInput(
-                    controller: _phoneController,
-                    scale: metrics.scale,
-                    onSubmitted: _submit,
+        body: ResponsiveDesignViewport(
+          child: FigmaFrame(
+            backgroundColor: AppColors.white,
+            builder: (context, metrics) {
+              return Stack(
+                children: [
+                  Positioned(
+                    left: metrics.x(PhoneLoginTokens.headerLeft),
+                    top: metrics.y(PhoneLoginTokens.headerTop),
+                    width: metrics.s(PhoneLoginTokens.headerWidth),
+                    child: _PhoneHeader(scale: metrics.scale),
                   ),
-                ),
-                Positioned(
-                  left: metrics.x(PhoneLoginTokens.submitLeft),
-                  top: metrics.y(PhoneLoginTokens.submitTop),
-                  child: _PhoneSubmitButton(
-                    scale: metrics.scale,
-                    isLoading: authState.status == AuthStatus.loading,
-                    onPressed: _submit,
+                  Positioned(
+                    left: metrics.x(PhoneLoginTokens.formLeft),
+                    top: metrics.y(PhoneLoginTokens.formTop),
+                    width: metrics.s(PhoneLoginTokens.formWidth),
+                    child: _PhoneInput(
+                      controller: _phoneController,
+                      scale: metrics.scale,
+                      onSubmitted: _submit,
+                    ),
                   ),
-                ),
-                Positioned(
-                  left: metrics.x(
-                    (FigmaFrameTokens.width - PhoneLoginTokens.legalWidth) / 2,
+                  Positioned(
+                    left: metrics.x(PhoneLoginTokens.submitLeft),
+                    top: metrics.y(PhoneLoginTokens.submitTop),
+                    child: _PhoneSubmitButton(
+                      scale: metrics.scale,
+                      isLoading: authState.status == AuthStatus.loading,
+                      onPressed: _submit,
+                    ),
                   ),
-                  top: metrics.y(PhoneLoginTokens.legalCenterY - 24),
-                  width: metrics.s(PhoneLoginTokens.legalWidth),
-                  child: _LegalText(scale: metrics.scale),
-                ),
-              ],
-            );
-          },
+                  Positioned(
+                    left: metrics.x(
+                      (FigmaFrameTokens.width - PhoneLoginTokens.legalWidth) /
+                          2,
+                    ),
+                    top: metrics.y(PhoneLoginTokens.legalCenterY - 24),
+                    width: metrics.s(PhoneLoginTokens.legalWidth),
+                    child: _LegalText(scale: metrics.scale),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

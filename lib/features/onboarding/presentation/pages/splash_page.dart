@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_brand_text_theme.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_system_ui.dart';
 import 'package:fotolou/shared/widgets/fotolou_logo.dart';
 import 'package:go_router/go_router.dart';
 
@@ -58,13 +59,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return const AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: AppColors.primary,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: AppColors.primary,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
+      value: AppSystemUi.branded,
       child: Scaffold(
         backgroundColor: AppColors.primary,
         body: _SplashCanvas(),

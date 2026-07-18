@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fotolou/core/dependency_injection/providers.dart';
 import 'package:fotolou/core/usecases/usecase.dart';
 import 'package:fotolou/core/utils/result.dart';
+import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/authentication/domain/entities/user_entity.dart';
 import 'package:fotolou/features/authentication/domain/usecases/get_current_user_use_case.dart';
 import 'package:fotolou/features/authentication/domain/usecases/login_use_case.dart';

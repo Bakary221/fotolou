@@ -24,9 +24,7 @@ class DioFactory {
     dio.interceptors.add(authInterceptor);
 
     if (config.enableLogs) {
-      dio.interceptors.add(
-        LogInterceptor(requestBody: true, responseBody: true),
-      );
+      dio.interceptors.add(LogInterceptor());
     }
 
     return dio;
