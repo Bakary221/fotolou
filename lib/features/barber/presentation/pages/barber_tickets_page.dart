@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
 import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/features/barber/presentation/controllers/barber_tickets_controller.dart';
 import 'package:fotolou/features/barber/presentation/widgets/barber_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_segmented_control.dart';
@@ -30,7 +31,12 @@ class BarberTicketsPage extends ConsumerWidget {
       body: Column(
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.pageHorizontal,
+              AppSpacing.pageTop,
+              AppSpacing.pageHorizontal,
+              0,
+            ),
             child: AppTopHeader(showLocation: false),
           ),
           Expanded(
@@ -39,7 +45,12 @@ class BarberTicketsPage extends ConsumerWidget {
                 Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.pageHorizontal,
+                        40,
+                        AppSpacing.pageHorizontal,
+                        0,
+                      ),
                       child: AppSegmentedControl<BarberTicketView>(
                         selectedValue: view,
                         onChanged: ref
@@ -61,7 +72,9 @@ class BarberTicketsPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 43),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.pageHorizontal,
+                      ),
                       child: _TicketSectionHeader(
                         title: view == BarberTicketView.current
                             ? 'File en direct'
@@ -71,7 +84,12 @@ class BarberTicketsPage extends ConsumerWidget {
                     const SizedBox(height: 22),
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.pageHorizontal,
+                          0,
+                          AppSpacing.pageHorizontal,
+                          96,
+                        ),
                         child: view == BarberTicketView.current
                             ? const _LiveQueueList()
                             : const _HistoryList(),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
 import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/barber/presentation/widgets/barber_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
@@ -30,40 +31,88 @@ class BarberProfilePage extends ConsumerWidget {
       body: Column(
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.pageHorizontal,
+              AppSpacing.pageTop,
+              AppSpacing.pageHorizontal,
+              0,
+            ),
             child: AppTopHeader(showLocation: false),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 42),
-              child: Column(
-                children: [
-                  const _ProfileHeader(),
-                  const SizedBox(height: 18),
-                  const _SubscriptionCard(),
-                  const SizedBox(height: 32),
-                  const _StatsLink(),
-                  const SizedBox(height: 16),
-                  const ProfileSettingsGroup(
-                    key: BarberProfileTokens.settingsGroupKey,
-                    items: [
-                      ProfileSettingsItem(
-                        icon: Icons.settings_outlined,
-                        label: 'Paramètres',
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxHeight < 620;
+                final isVeryCompact = constraints.maxHeight < 500;
+                final topPadding = isVeryCompact
+                    ? 8.0
+                    : isCompact
+                    ? 14.0
+                    : 32.0;
+                final bottomPadding = isCompact ? 8.0 : 30.0;
+                final avatarSize = isVeryCompact
+                    ? 58.0
+                    : isCompact
+                    ? 72.0
+                    : 98.0;
+                final subscriptionHeight = isVeryCompact
+                    ? 54.0
+                    : isCompact
+                    ? 60.0
+                    : 72.0;
+                final linkHeight = isCompact ? 48.0 : 56.0;
+                final settingsTileHeight = isCompact ? 52.0 : 58.0;
+                final profileGap = isVeryCompact
+                    ? 6.0
+                    : isCompact
+                    ? 8.0
+                    : 18.0;
+                final sectionGap = isVeryCompact
+                    ? 8.0
+                    : isCompact
+                    ? 10.0
+                    : 24.0;
+                final settingsGap = isCompact ? 8.0 : 16.0;
+
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.pageHorizontal,
+                    topPadding,
+                    AppSpacing.pageHorizontal,
+                    bottomPadding,
+                  ),
+                  child: Column(
+                    children: [
+                      _ProfileHeader(avatarSize: avatarSize),
+                      SizedBox(height: profileGap),
+                      _SubscriptionCard(height: subscriptionHeight),
+                      SizedBox(height: sectionGap),
+                      _StatsLink(height: linkHeight),
+                      SizedBox(height: settingsGap),
+                      ProfileSettingsGroup(
+                        key: BarberProfileTokens.settingsGroupKey,
+                        tileHeight: settingsTileHeight,
+                        items: const [
+                          ProfileSettingsItem(
+                            icon: Icons.settings_outlined,
+                            label: 'Paramètres',
+                          ),
+                          ProfileSettingsItem(
+                            icon: Icons.info_outline,
+                            label: 'Aide & Support',
+                          ),
+                        ],
                       ),
-                      ProfileSettingsItem(
-                        icon: Icons.info_outline,
-                        label: 'Aide & Support',
+                      const Spacer(),
+                      ProfileLogoutButton(
+                        key: BarberProfileTokens.logoutButtonKey,
+                        height: isCompact ? 42 : 48,
+                        onPressed: () => _logout(context, ref),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 62),
-                  ProfileLogoutButton(
-                    key: BarberProfileTokens.logoutButtonKey,
-                    onPressed: () => _logout(context, ref),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -80,15 +129,21 @@ class BarberProfilePage extends ConsumerWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader();
+  const _ProfileHeader({required this.avatarSize});
+
+  final double avatarSize;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        ProfileAvatar(key: BarberProfileTokens.avatarKey, initials: 'B'),
-        SizedBox(height: 24),
-        Text(
+        ProfileAvatar(
+          key: BarberProfileTokens.avatarKey,
+          initials: 'B',
+          size: avatarSize,
+        ),
+        const SizedBox(height: 8),
+        const Text(
           'BAKARY',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -99,8 +154,8 @@ class _ProfileHeader extends StatelessWidget {
             height: 20 / 24,
           ),
         ),
-        SizedBox(height: 16),
-        Text(
+        const SizedBox(height: 6),
+        const Text(
           '+221 77 862 70 52',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -117,13 +172,15 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _SubscriptionCard extends StatelessWidget {
-  const _SubscriptionCard();
+  const _SubscriptionCard({required this.height});
+
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       key: BarberProfileTokens.subscriptionCardKey,
-      height: 72,
+      height: height,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -190,7 +247,9 @@ class _SubscriptionCard extends StatelessWidget {
 }
 
 class _StatsLink extends StatelessWidget {
-  const _StatsLink();
+  const _StatsLink({required this.height});
+
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +257,7 @@ class _StatsLink extends StatelessWidget {
       key: BarberProfileTokens.statsLinkKey,
       icon: Icons.bar_chart_rounded,
       label: 'Statistiques',
+      height: height,
       standalone: true,
       onTap: () {},
     );
@@ -208,6 +268,7 @@ class _ProfileLink extends StatelessWidget {
   const _ProfileLink({
     required this.icon,
     required this.label,
+    required this.height,
     required this.onTap,
     this.standalone = false,
     super.key,
@@ -215,6 +276,7 @@ class _ProfileLink extends StatelessWidget {
 
   final IconData icon;
   final String label;
+  final double height;
   final VoidCallback onTap;
   final bool standalone;
 
@@ -226,7 +288,7 @@ class _ProfileLink extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: SizedBox(
-          height: 56,
+          height: height,
           child: Row(
             children: [
               const SizedBox(width: 16),

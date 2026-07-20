@@ -29,14 +29,15 @@ void main() {
 
     expect(find.text('Prends ton ticket'), findsOneWidget);
     expect(
-      find.text('Choisi ton salon et\nprend ton ticket en 1 clic.'),
+      find.text('Choisis ton salon et\nprends ton ticket en 1 clic.'),
       findsOneWidget,
     );
+    expect(find.text('Passer'), findsOneWidget);
 
     await tester.drag(find.byType(PageView), const Offset(-440, 0));
     await tester.pumpAndSettle();
 
-    expect(find.text('Suis ta file en temps reel'), findsOneWidget);
+    expect(find.text('Suis ta file en temps réel'), findsOneWidget);
 
     await tester.drag(find.byType(PageView), const Offset(-440, 0));
     await tester.pumpAndSettle();
@@ -93,11 +94,13 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('Bienvenue 👋'), findsOneWidget);
       expect(find.text('Continuer'), findsOneWidget);
+      _expectVisibleInViewport(tester, find.text('Continuer'), size);
 
       await _pumpPage(tester, const OtpVerificationPage(), size);
       expect(tester.takeException(), isNull);
       expect(find.text('Entrez le code'), findsOneWidget);
       expect(find.text('verifier'), findsOneWidget);
+      _expectVisibleInViewport(tester, find.text('verifier'), size);
     }
   });
 
@@ -131,7 +134,11 @@ void main() {
   ) async {
     await _pumpPage(tester, const PhoneLoginPage(), const Size(440, 956));
 
-    final chevronSize = tester.getSize(find.byType(SvgPicture));
+    final chevron = find.descendant(
+      of: find.byKey(PhoneLoginTokens.countrySelectorFrameKey),
+      matching: find.byType(SvgPicture),
+    );
+    final chevronSize = tester.getSize(chevron);
 
     expect(chevronSize.width, closeTo(10.6667, 0.001));
     expect(chevronSize.height, closeTo(6, 0.001));
@@ -209,6 +216,28 @@ void main() {
     expect(activeTextField.decoration?.focusedBorder, InputBorder.none);
     expect(activeTextField.decoration?.filled, isFalse);
     expect(activeTextField.style?.color, AppColors.focusBlue);
+  });
+
+  testWidgets('otp input closes keyboard after the code is complete', (
+    tester,
+  ) async {
+    await _pumpPage(
+      tester,
+      const OtpVerificationPage(phone: '+221701234567'),
+      const Size(393, 659),
+    );
+
+    await _enterOtp(tester, '123456');
+    await tester.pump();
+
+    for (final field in tester.widgetList<TextField>(find.byType(TextField))) {
+      expect(field.focusNode?.hasFocus ?? false, isFalse);
+    }
+    _expectVisibleInViewport(
+      tester,
+      find.text('verifier'),
+      const Size(393, 659),
+    );
   });
 
   testWidgets('client home keeps search area fixed while salon list scrolls', (
@@ -341,7 +370,7 @@ void main() {
     expect(find.text('+221 77 862 70 52'), findsOneWidget);
     expect(find.text('TICKETS'), findsOneWidget);
     expect(find.text('45'), findsOneWidget);
-    expect(find.text('SERVIE'), findsOneWidget);
+    expect(find.text('SERVIS'), findsOneWidget);
     expect(find.text('38'), findsOneWidget);
     expect(find.text('Paramètres'), findsOneWidget);
     expect(find.text('Aide & Support'), findsOneWidget);
@@ -427,7 +456,7 @@ void main() {
     expect(find.text('Prends ton ticket'), findsOneWidget);
 
     await _tapVisibleText(tester, 'Suivant');
-    expect(find.text('Suis ta file en temps reel'), findsOneWidget);
+    expect(find.text('Suis ta file en temps réel'), findsOneWidget);
 
     await _tapVisibleText(tester, 'Suivant');
     expect(find.text('Gagne du temps'), findsOneWidget);
@@ -622,6 +651,15 @@ Future<void> _pumpRouter(
 Future<void> _tapVisibleText(WidgetTester tester, String text) async {
   await tester.tap(find.text(text).hitTestable().first);
   await tester.pumpAndSettle();
+}
+
+void _expectVisibleInViewport(WidgetTester tester, Finder finder, Size size) {
+  final visibleFinder = finder.hitTestable();
+
+  expect(visibleFinder, findsWidgets);
+  final rect = tester.getRect(visibleFinder.first);
+  expect(rect.top, greaterThanOrEqualTo(0));
+  expect(rect.bottom, lessThanOrEqualTo(size.height));
 }
 
 GoRouter _clientRouter({String? initialLocation}) {

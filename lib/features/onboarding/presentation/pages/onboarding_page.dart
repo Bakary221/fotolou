@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_brand_text_theme.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/app/theme/app_system_ui.dart';
 import 'package:fotolou/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/figma_frame.dart';
@@ -31,6 +33,10 @@ abstract final class OnboardingScreenTokens {
   static const startButtonTop = 25.0;
   static const nextDotsTop = 123.0;
   static const startDotsTop = 128.0;
+  static const skipTop = 58.0;
+  static const skipRight = AppSpacing.pageHorizontal;
+  static const skipWidth = 92.0;
+  static const skipHeight = 42.0;
   static const transitionDuration = Duration(milliseconds: 280);
 }
 
@@ -47,16 +53,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   static const _slides = [
     _OnboardingSlideData(
       title: 'Prends ton ticket',
-      body: 'Choisi ton salon et\nprend ton ticket en 1 clic.',
+      body: 'Choisis ton salon et\nprends ton ticket en 1 clic.',
       titleLeft: OnboardingScreenTokens.ticketTitleLeft,
       artworkLeft: OnboardingScreenTokens.ticketArtworkLeft,
       artworkTop: OnboardingScreenTokens.ticketArtworkTop,
       artworkType: OnboardingArtworkType.ticket,
     ),
     _OnboardingSlideData(
-      title: 'Suis ta file en temps reel',
+      title: 'Suis ta file en temps réel',
       body:
-          'Vois ta position et recois\nune notification quand ton\ntour approche',
+          'Vois ta position et reçois\nune notification quand ton\ntour approche',
       titleLeft: OnboardingScreenTokens.queueTitleLeft,
       artworkLeft: OnboardingScreenTokens.queueArtworkLeft,
       artworkTop: OnboardingScreenTokens.queueArtworkTop,
@@ -64,7 +70,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     ),
     _OnboardingSlideData(
       title: 'Gagne du temps',
-      body: 'Attends ou tu veux, on\nt’informe quand c’est\npresque ton tour',
+      body: 'Attends où tu veux, on\nt’informe quand c’est\npresque ton tour',
       titleLeft: OnboardingScreenTokens.timeTitleLeft,
       artworkLeft: OnboardingScreenTokens.timeArtworkLeft,
       artworkTop: OnboardingScreenTokens.timeArtworkTop,
@@ -82,22 +88,57 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(onboardingControllerProvider).currentIndex;
+    final currentSlide = _slides[currentIndex];
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: AppSystemUi.light,
       child: Scaffold(
         backgroundColor: AppColors.white,
-        body: PageView.builder(
-          controller: _pageController,
-          itemCount: _slides.length,
-          onPageChanged: (index) {
-            ref.read(onboardingControllerProvider.notifier).setPage(index);
-          },
-          itemBuilder: (context, index) {
-            return _OnboardingSlide(
-              data: _slides[index],
-              currentIndex: index,
-              count: _slides.length,
-              onActionPressed: () => _handleAction(index),
+        body: FigmaFrame(
+          backgroundColor: AppColors.white,
+          builder: (context, metrics) {
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _slides.length,
+                    onPageChanged: (index) {
+                      ref
+                          .read(onboardingControllerProvider.notifier)
+                          .setPage(index);
+                    },
+                    itemBuilder: (context, index) {
+                      return _OnboardingSlideContent(
+                        data: _slides[index],
+                        metrics: metrics,
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  top: metrics.y(OnboardingScreenTokens.skipTop),
+                  right: metrics.s(OnboardingScreenTokens.skipRight),
+                  child: _SkipButton(
+                    scale: metrics.scale,
+                    onPressed: _goToPhoneLogin,
+                  ),
+                ),
+                Positioned(
+                  left: metrics.x(0),
+                  top: metrics.y(OnboardingScreenTokens.bottomPanelTop),
+                  width: metrics.s(FigmaFrameTokens.width),
+                  height: metrics.s(OnboardingScreenTokens.bottomPanelHeight),
+                  child: _BottomPanel(
+                    data: currentSlide,
+                    currentIndex: currentIndex,
+                    count: _slides.length,
+                    metrics: metrics,
+                    onActionPressed: () => _handleAction(currentIndex),
+                  ),
+                ),
+              ],
             );
           },
         ),
@@ -107,7 +148,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   void _handleAction(int index) {
     if (index == _slides.length - 1) {
-      context.goNamed(AppRoute.phoneLogin.name);
+      _goToPhoneLogin();
       return;
     }
 
@@ -116,81 +157,94 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       curve: Curves.easeOut,
     );
   }
+
+  void _goToPhoneLogin() {
+    context.goNamed(AppRoute.phoneLogin.name);
+  }
 }
 
-class _OnboardingSlide extends StatelessWidget {
-  const _OnboardingSlide({
-    required this.data,
-    required this.currentIndex,
-    required this.count,
-    required this.onActionPressed,
-  });
+class _OnboardingSlideContent extends StatelessWidget {
+  const _OnboardingSlideContent({required this.data, required this.metrics});
 
   final _OnboardingSlideData data;
-  final int currentIndex;
-  final int count;
-  final VoidCallback onActionPressed;
+  final FigmaFrameMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
     final brandTextTheme = context.brandTextTheme;
 
-    return FigmaFrame(
-      backgroundColor: AppColors.white,
-      builder: (context, metrics) {
-        return Stack(
-          children: [
-            Positioned(
-              left: metrics.x(data.titleLeft),
-              top: metrics.y(OnboardingScreenTokens.titleTop),
-              child: Text(
-                data.title,
-                textAlign: TextAlign.center,
-                style: brandTextTheme.onboardingTitle.copyWith(
-                  color: AppColors.ink,
-                  fontSize:
-                      brandTextTheme.onboardingTitle.fontSize! * metrics.scale,
-                ),
+    return SizedBox.expand(
+      child: Stack(
+        children: [
+          Positioned(
+            left: metrics.x(data.titleLeft),
+            top: metrics.y(OnboardingScreenTokens.titleTop),
+            child: Text(
+              data.title,
+              textAlign: TextAlign.center,
+              style: brandTextTheme.onboardingTitle.copyWith(
+                color: AppColors.ink,
+                fontSize:
+                    brandTextTheme.onboardingTitle.fontSize! * metrics.scale,
               ),
             ),
-            Positioned(
-              left: metrics.x(0),
-              top: metrics.y(OnboardingScreenTokens.bodyTop),
-              width: metrics.s(OnboardingScreenTokens.bodyWidth),
-              child: Text(
-                data.body,
-                textAlign: TextAlign.center,
-                style: brandTextTheme.onboardingBody.copyWith(
-                  color: AppColors.mutedInk,
-                  fontSize:
-                      brandTextTheme.onboardingBody.fontSize! * metrics.scale,
-                ),
+          ),
+          Positioned(
+            left: metrics.x(0),
+            top: metrics.y(OnboardingScreenTokens.bodyTop),
+            width: metrics.s(OnboardingScreenTokens.bodyWidth),
+            child: Text(
+              data.body,
+              textAlign: TextAlign.center,
+              style: brandTextTheme.onboardingBody.copyWith(
+                color: AppColors.mutedInk,
+                fontSize:
+                    brandTextTheme.onboardingBody.fontSize! * metrics.scale,
               ),
             ),
-            Positioned(
-              left: metrics.x(data.artworkLeft),
-              top: metrics.y(data.artworkTop),
-              child: OnboardingArtwork(
-                type: data.artworkType,
-                scale: metrics.scale,
-              ),
+          ),
+          Positioned(
+            left: metrics.x(data.artworkLeft),
+            top: metrics.y(data.artworkTop),
+            child: OnboardingArtwork(
+              type: data.artworkType,
+              scale: metrics.scale,
             ),
-            Positioned(
-              left: metrics.x(0),
-              top: metrics.y(OnboardingScreenTokens.bottomPanelTop),
-              width: metrics.s(FigmaFrameTokens.width),
-              height: metrics.s(OnboardingScreenTokens.bottomPanelHeight),
-              child: _BottomPanel(
-                data: data,
-                currentIndex: currentIndex,
-                count: count,
-                metrics: metrics,
-                onActionPressed: onActionPressed,
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkipButton extends StatelessWidget {
+  const _SkipButton({required this.scale, required this.onPressed});
+
+  final double scale;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: OnboardingScreenTokens.skipWidth * scale,
+      height: OnboardingScreenTokens.skipHeight * scale,
+      child: TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.mutedInk,
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(21 * scale),
+          ),
+          textStyle: TextStyle(
+            fontFamily: AppFonts.inter,
+            fontSize: 15 * scale,
+            fontWeight: FontWeight.w600,
+            height: 20 / 15,
+          ),
+        ),
+        child: const Text('Passer'),
+      ),
     );
   }
 }
@@ -228,7 +282,7 @@ class _BottomPanel extends StatelessWidget {
             top: buttonTop * metrics.scale,
             child: OnboardingBottomAction(
               label: data.actionLabel,
-              isPrimary: data.isFinalSlide,
+              isPrimary: true,
               scale: metrics.scale,
               onPressed: onActionPressed,
             ),

@@ -10,8 +10,7 @@ enum AppRoute {
   barberHome('/barber'),
   barberTickets('/barber/tickets'),
   barberProfile('/barber/profile'),
-  home('/'),
-  login('/login');
+  home('/');
 
   const AppRoute(this.path);
 

@@ -84,6 +84,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
       _focusNodes[index - 1].requestFocus();
     }
     _notifyCodeChanged();
+    _dismissKeyboardIfComplete();
   }
 
   void _distributeCode(int startIndex, String code) {
@@ -93,13 +94,27 @@ class _AppOtpInputState extends State<AppOtpInput> {
       _controllers[startIndex + offset].text = digits[offset];
     }
 
-    final focusIndex = (startIndex + digits.length).clamp(0, widget.length - 1);
-    _focusNodes[focusIndex].requestFocus();
+    final nextIndex = startIndex + digits.length;
+    if (nextIndex >= widget.length) {
+      _focusNodes.last.unfocus();
+    } else {
+      _focusNodes[nextIndex].requestFocus();
+    }
     _notifyCodeChanged();
+    _dismissKeyboardIfComplete();
   }
 
   void _notifyCodeChanged() {
     widget.onChanged(_controllers.map((controller) => controller.text).join());
+  }
+
+  void _dismissKeyboardIfComplete() {
+    final isComplete = _controllers.every(
+      (controller) => controller.text.trim().isNotEmpty,
+    );
+    if (isComplete) {
+      FocusManager.instance.primaryFocus?.unfocus();
+    }
   }
 }
 

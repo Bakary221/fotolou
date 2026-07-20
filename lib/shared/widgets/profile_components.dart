@@ -33,9 +33,14 @@ class ProfileAvatar extends StatelessWidget {
 }
 
 class ProfileSettingsGroup extends StatelessWidget {
-  const ProfileSettingsGroup({required this.items, super.key});
+  const ProfileSettingsGroup({
+    required this.items,
+    this.tileHeight = 58,
+    super.key,
+  });
 
   final List<ProfileSettingsItem> items;
+  final double tileHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +59,7 @@ class ProfileSettingsGroup extends StatelessWidget {
       child: Column(
         children: [
           for (var index = 0; index < items.length; index++) ...[
-            ProfileSettingsTile(item: items[index]),
+            ProfileSettingsTile(item: items[index], height: tileHeight),
             if (index < items.length - 1)
               const Divider(height: 1, color: AppColors.gray50),
           ],
@@ -77,9 +82,10 @@ class ProfileSettingsItem {
 }
 
 class ProfileSettingsTile extends StatelessWidget {
-  const ProfileSettingsTile({required this.item, super.key});
+  const ProfileSettingsTile({required this.item, this.height = 58, super.key});
 
   final ProfileSettingsItem item;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +95,7 @@ class ProfileSettingsTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: item.onTap,
         child: SizedBox(
-          height: 58,
+          height: height,
           child: Row(
             children: [
               const SizedBox(width: 16),
@@ -124,15 +130,22 @@ class ProfileSettingsTile extends StatelessWidget {
 }
 
 class ProfileLogoutButton extends StatelessWidget {
-  const ProfileLogoutButton({required this.onPressed, super.key});
+  const ProfileLogoutButton({
+    required this.onPressed,
+    this.width = 200,
+    this.height = 48,
+    super.key,
+  });
 
   final VoidCallback onPressed;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 200,
-      height: 48,
+      width: width,
+      height: height,
       child: TextButton.icon(
         onPressed: onPressed,
         icon: const Icon(Icons.logout_rounded, size: 20),
