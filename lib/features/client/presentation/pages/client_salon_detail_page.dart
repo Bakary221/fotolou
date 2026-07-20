@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
 import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/features/client/dependency_injection/client_providers.dart';
 import 'package:fotolou/features/client/domain/entities/salon.dart';
 import 'package:fotolou/shared/widgets/app_page_scaffold.dart';
@@ -29,58 +30,90 @@ class ClientSalonDetailPage extends ConsumerWidget {
         : ref.watch(salonByIdProvider(salonId!)) ?? nearbySalons.first;
 
     return AppPageScaffold(
-      body: SingleChildScrollView(child: _SalonDetailContent(salon: salon)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return _SalonDetailContent(
+            salon: salon,
+            availableHeight: constraints.maxHeight,
+          );
+        },
+      ),
     );
   }
 }
 
 class _SalonDetailContent extends StatelessWidget {
-  const _SalonDetailContent({required this.salon});
+  const _SalonDetailContent({
+    required this.salon,
+    required this.availableHeight,
+  });
 
   final Salon salon;
+  final double availableHeight;
 
   @override
   Widget build(BuildContext context) {
+    final isCompact = availableHeight < 700;
+    final heroHeight = (availableHeight * (isCompact ? 0.35 : 0.37))
+        .clamp(isCompact ? 190.0 : 280.0, isCompact ? 220.0 : 350.0)
+        .toDouble();
+    final titleGap = isCompact ? 8.0 : 20.0;
+    final contactGap = isCompact ? 10.0 : 22.0;
+    final statsGap = isCompact ? 22.0 : 42.0;
+    final bottomGap = isCompact ? 10.0 : 32.0;
+    final contactIconSize = isCompact ? 44.0 : 60.0;
+    final statsHeight = isCompact ? 92.0 : 108.0;
+    final buttonHeight = isCompact ? 58.0 : 73.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SalonHero(salon: salon),
-        const SizedBox(height: 20),
+        _SalonHero(salon: salon, height: heroHeight),
+        SizedBox(height: titleGap),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pageHorizontal,
+          ),
           child: _SalonTitle(salon: salon),
         ),
-        const SizedBox(height: 26),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _ContactOptions(),
+        SizedBox(height: contactGap),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pageHorizontal,
+          ),
+          child: _ContactOptions(iconSize: contactIconSize),
         ),
-        const SizedBox(height: 45),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _SalonStats(),
+        SizedBox(height: statsGap),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pageHorizontal,
+          ),
+          child: _SalonStats(cardHeight: statsHeight, isCompact: isCompact),
         ),
-        const SizedBox(height: 65),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _TicketButton(),
+        const Spacer(),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pageHorizontal,
+          ),
+          child: _TicketButton(height: buttonHeight),
         ),
-        const SizedBox(height: 49),
+        SizedBox(height: bottomGap),
       ],
     );
   }
 }
 
 class _SalonHero extends StatelessWidget {
-  const _SalonHero({required this.salon});
+  const _SalonHero({required this.salon, required this.height});
 
   final Salon salon;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       key: ClientSalonDetailTokens.heroKey,
-      height: 350,
+      height: height,
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
@@ -222,87 +255,125 @@ class _SalonTitle extends StatelessWidget {
 }
 
 class _ContactOptions extends StatelessWidget {
-  const _ContactOptions();
+  const _ContactOptions({required this.iconSize});
+
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Row(
       children: [
-        _ContactOption(icon: Icons.language_rounded, label: 'Site Web'),
-        _ContactOption(icon: Icons.phone_in_talk_rounded, label: 'Appeler'),
-        _ContactOption(icon: Icons.navigation_rounded, label: 'Direction'),
-        _ContactOption(icon: Icons.share_rounded, label: 'Partager'),
+        Expanded(
+          child: _ContactOption(
+            icon: Icons.language_rounded,
+            label: 'Site',
+            iconSize: iconSize,
+          ),
+        ),
+        Expanded(
+          child: _ContactOption(
+            icon: Icons.phone_in_talk_rounded,
+            label: 'Appeler',
+            iconSize: iconSize,
+          ),
+        ),
+        Expanded(
+          child: _ContactOption(
+            icon: Icons.navigation_rounded,
+            label: 'Itinéraire',
+            iconSize: iconSize,
+          ),
+        ),
+        Expanded(
+          child: _ContactOption(
+            icon: Icons.share_rounded,
+            label: 'Partager',
+            iconSize: iconSize,
+          ),
+        ),
       ],
     );
   }
 }
 
 class _ContactOption extends StatelessWidget {
-  const _ContactOption({required this.icon, required this.label});
+  const _ContactOption({
+    required this.icon,
+    required this.label,
+    required this.iconSize,
+  });
 
   final IconData icon;
   final String label;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 69,
-      child: Column(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppColors.blueSurface,
-              border: Border.all(color: AppColors.gray200),
-              borderRadius: BorderRadius.circular(16.949),
-            ),
-            child: Icon(icon, color: AppColors.secondary, size: 30),
+    return Column(
+      children: [
+        Container(
+          width: iconSize,
+          height: iconSize,
+          decoration: BoxDecoration(
+            color: AppColors.blueSurface,
+            border: Border.all(color: AppColors.gray200),
+            borderRadius: BorderRadius.circular(iconSize * 0.28),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textOverlay,
-              fontFamily: AppFonts.inter,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Icon(icon, color: AppColors.secondary, size: iconSize * 0.5),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: AppColors.textOverlay,
+            fontFamily: AppFonts.inter,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            height: 16 / 12,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class _SalonStats extends StatelessWidget {
-  const _SalonStats();
+  const _SalonStats({required this.cardHeight, required this.isCompact});
+
+  final double cardHeight;
+  final bool isCompact;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         Expanded(
           child: _StatCard(
+            height: cardHeight,
+            isCompact: isCompact,
             title: 'P E R S O N N E S',
             child: Text(
               '5',
               style: TextStyle(
                 color: AppColors.black,
                 fontFamily: AppFonts.inter,
-                fontSize: 32,
+                fontSize: isCompact ? 34 : 38,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
         ),
-        SizedBox(width: 23),
+        const SizedBox(width: 23),
         Expanded(
-          child: _StatCard(title: 'STATUT', child: AppStatusBadge.open()),
+          child: _StatCard(
+            height: cardHeight,
+            isCompact: isCompact,
+            title: 'STATUT',
+            child: const AppStatusBadge.open(),
+          ),
         ),
       ],
     );
@@ -310,16 +381,25 @@ class _SalonStats extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.title, required this.child});
+  const _StatCard({
+    required this.height,
+    required this.isCompact,
+    required this.title,
+    required this.child,
+  });
 
+  final double height;
+  final bool isCompact;
   final String title;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 95,
-      padding: const EdgeInsets.fromLTRB(11, 12, 11, 10),
+      height: height,
+      padding: isCompact
+          ? const EdgeInsets.fromLTRB(10, 8, 10, 8)
+          : const EdgeInsets.fromLTRB(11, 12, 11, 10),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.slate800),
         borderRadius: BorderRadius.circular(20),
@@ -348,14 +428,16 @@ class _StatCard extends StatelessWidget {
 }
 
 class _TicketButton extends StatelessWidget {
-  const _TicketButton();
+  const _TicketButton({required this.height});
+
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       key: ClientSalonDetailTokens.ticketButtonKey,
       width: double.infinity,
-      height: 73,
+      height: height,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.accent,

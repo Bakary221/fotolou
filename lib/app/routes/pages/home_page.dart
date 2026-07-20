@@ -25,7 +25,12 @@ class HomePage extends ConsumerWidget {
       body: user == null
           ? const AppEmptyView(message: 'Aucune session active.')
           : Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageHorizontal,
+                AppSpacing.pageTop,
+                AppSpacing.pageHorizontal,
+                AppSpacing.pageTop,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

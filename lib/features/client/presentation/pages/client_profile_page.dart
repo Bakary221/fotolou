@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
 import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/client/presentation/widgets/client_bottom_nav.dart';
 import 'package:fotolou/shared/widgets/app_top_header.dart';
@@ -28,38 +29,84 @@ class ClientProfilePage extends ConsumerWidget {
       body: Column(
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(20, 24, 20, 0),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.pageHorizontal,
+              AppSpacing.pageTop,
+              AppSpacing.pageHorizontal,
+              0,
+            ),
             child: AppTopHeader(showLocation: false),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(26, 34, 26, 42),
-              child: Column(
-                children: [
-                  const _ProfileHeader(),
-                  const SizedBox(height: 31),
-                  const _ProfileStats(),
-                  const SizedBox(height: 50),
-                  const ProfileSettingsGroup(
-                    key: ClientProfileTokens.settingsGroupKey,
-                    items: [
-                      ProfileSettingsItem(
-                        icon: Icons.settings_outlined,
-                        label: 'Paramètres',
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxHeight < 620;
+                final isVeryCompact = constraints.maxHeight < 500;
+                final topPadding = isVeryCompact
+                    ? 10.0
+                    : isCompact
+                    ? 16.0
+                    : 34.0;
+                final bottomPadding = isCompact ? 8.0 : 30.0;
+                final avatarSize = isVeryCompact
+                    ? 62.0
+                    : isCompact
+                    ? 76.0
+                    : 98.0;
+                final statsHeight = isVeryCompact
+                    ? 64.0
+                    : isCompact
+                    ? 74.0
+                    : 95.0;
+                final settingsTileHeight = isCompact ? 50.0 : 58.0;
+                final headerGap = isVeryCompact
+                    ? 8.0
+                    : isCompact
+                    ? 12.0
+                    : 31.0;
+                final settingsGap = isVeryCompact
+                    ? 8.0
+                    : isCompact
+                    ? 14.0
+                    : 42.0;
+
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.pageHorizontal,
+                    topPadding,
+                    AppSpacing.pageHorizontal,
+                    bottomPadding,
+                  ),
+                  child: Column(
+                    children: [
+                      _ProfileHeader(avatarSize: avatarSize),
+                      SizedBox(height: headerGap),
+                      _ProfileStats(cardHeight: statsHeight),
+                      SizedBox(height: settingsGap),
+                      ProfileSettingsGroup(
+                        key: ClientProfileTokens.settingsGroupKey,
+                        tileHeight: settingsTileHeight,
+                        items: const [
+                          ProfileSettingsItem(
+                            icon: Icons.settings_outlined,
+                            label: 'Paramètres',
+                          ),
+                          ProfileSettingsItem(
+                            icon: Icons.info_outline,
+                            label: 'Aide & Support',
+                          ),
+                        ],
                       ),
-                      ProfileSettingsItem(
-                        icon: Icons.info_outline,
-                        label: 'Aide & Support',
+                      const Spacer(),
+                      ProfileLogoutButton(
+                        key: ClientProfileTokens.logoutButtonKey,
+                        height: isCompact ? 42 : 48,
+                        onPressed: () => _logout(context, ref),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 62),
-                  ProfileLogoutButton(
-                    key: ClientProfileTokens.logoutButtonKey,
-                    onPressed: () => _logout(context, ref),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -76,15 +123,21 @@ class ClientProfilePage extends ConsumerWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader();
+  const _ProfileHeader({required this.avatarSize});
+
+  final double avatarSize;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        ProfileAvatar(key: ClientProfileTokens.avatarKey, initials: 'B'),
-        SizedBox(height: 12),
-        Text(
+        ProfileAvatar(
+          key: ClientProfileTokens.avatarKey,
+          initials: 'B',
+          size: avatarSize,
+        ),
+        const SizedBox(height: 8),
+        const Text(
           'BAKARY',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -95,8 +148,8 @@ class _ProfileHeader extends StatelessWidget {
             height: 32 / 24,
           ),
         ),
-        SizedBox(height: 9),
-        Text(
+        const SizedBox(height: 4),
+        const Text(
           '+221 77 862 70 52',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -113,18 +166,20 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _ProfileStats extends StatelessWidget {
-  const _ProfileStats();
+  const _ProfileStats({required this.cardHeight});
+
+  final double cardHeight;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         Expanded(
-          child: _StatCard(label: 'TICKETS', value: '45'),
+          child: _StatCard(height: cardHeight, label: 'TICKETS', value: '45'),
         ),
-        SizedBox(width: 20),
+        const SizedBox(width: 20),
         Expanded(
-          child: _StatCard(label: 'SERVIE', value: '38'),
+          child: _StatCard(height: cardHeight, label: 'SERVIS', value: '38'),
         ),
       ],
     );
@@ -132,15 +187,20 @@ class _ProfileStats extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value});
+  const _StatCard({
+    required this.height,
+    required this.label,
+    required this.value,
+  });
 
+  final double height;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 95,
+      height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: AppColors.white,

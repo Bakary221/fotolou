@@ -6,4 +6,6 @@ abstract final class AppSpacing {
   static const lg = 24.0;
   static const xl = 32.0;
   static const xxl = 48.0;
+  static const pageHorizontal = 20.0;
+  static const pageTop = 24.0;
 }

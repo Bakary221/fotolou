@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_brand_text_theme.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/app/theme/app_system_ui.dart';
 import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/authentication/domain/entities/user_role.dart';
@@ -13,7 +14,6 @@ import 'package:fotolou/features/onboarding/presentation/widgets/figma_frame.dar
 import 'package:fotolou/features/onboarding/presentation/widgets/onboarding_assets.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/onboarding_bottom_action.dart';
 import 'package:fotolou/shared/widgets/app_otp_input.dart';
-import 'package:fotolou/shared/widgets/responsive_design_viewport.dart';
 import 'package:go_router/go_router.dart';
 
 abstract final class OtpTokens {
@@ -55,67 +55,87 @@ class _OtpVerificationPageState extends ConsumerState<OtpVerificationPage> {
       value: AppSystemUi.light,
       child: Scaffold(
         backgroundColor: AppColors.white,
-        body: ResponsiveDesignViewport(
-          child: FigmaFrame(
-            backgroundColor: AppColors.white,
-            builder: (context, metrics) {
-              return Stack(
-                children: [
-                  Positioned(
-                    left: metrics.x(OtpTokens.backLeft),
-                    top: metrics.y(OtpTokens.backTop),
-                    child: Semantics(
-                      button: true,
-                      label: 'Retour',
-                      child: GestureDetector(
-                        onTap: () => context.goNamed(AppRoute.phoneLogin.name),
-                        child: SvgPicture.asset(
-                          OnboardingAssets.back,
-                          width: metrics.s(OtpTokens.backSize),
-                          height: metrics.s(OtpTokens.backSize),
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          bottom: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: FigmaFrameTokens.width,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final scale =
+                      ((constraints.maxWidth - AppSpacing.pageHorizontal * 2) /
+                              OnboardingBottomActionTokens.width)
+                          .clamp(0.68, 1.0)
+                          .toDouble();
+                  final isTight = constraints.maxHeight < 560;
+                  final topGap = (constraints.maxHeight * 0.20)
+                      .clamp(isTight ? 52.0 : 104.0, 170.0)
+                      .toDouble();
+                  final otpGap = isTight ? 22.0 : 36.0;
+                  final resendGap = isTight ? 20.0 : 32.0;
+                  final bottomGap = (constraints.maxHeight * 0.05)
+                      .clamp(14.0, 42.0)
+                      .toDouble();
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.pageHorizontal,
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          left: 0,
+                          top: isTight ? 20 : 42,
+                          child: Semantics(
+                            button: true,
+                            label: 'Retour',
+                            child: GestureDetector(
+                              onTap: () =>
+                                  context.goNamed(AppRoute.phoneLogin.name),
+                              child: SvgPicture.asset(
+                                OnboardingAssets.back,
+                                width: OtpTokens.backSize * scale,
+                                height: OtpTokens.backSize * scale,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        Column(
+                          children: [
+                            SizedBox(height: topGap),
+                            _OtpHeader(phone: _formattedPhone, scale: scale),
+                            SizedBox(height: otpGap),
+                            SizedBox(
+                              width: OtpTokens.contentWidth * scale,
+                              child: AppOtpInput(
+                                boxKeyBuilder: OtpTokens.otpBoxKey,
+                                scale: scale,
+                                onChanged: (value) => _otpCode = value,
+                              ),
+                            ),
+                            SizedBox(height: resendGap),
+                            _ResendText(scale: scale),
+                            const Spacer(),
+                            OnboardingBottomAction(
+                              label: 'verifier',
+                              isPrimary: true,
+                              iconAsset: OnboardingAssets.verifyArrow,
+                              isEnabled: authState.status != AuthStatus.loading,
+                              scale: scale,
+                              onPressed: _verify,
+                            ),
+                            SizedBox(height: bottomGap),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  Positioned(
-                    left: metrics.x(OtpTokens.contentLeft),
-                    top: metrics.y(OtpTokens.titleTop),
-                    width: metrics.s(OtpTokens.contentWidth),
-                    child: _OtpHeader(
-                      phone: _formattedPhone,
-                      scale: metrics.scale,
-                    ),
-                  ),
-                  Positioned(
-                    left: metrics.x(OtpTokens.contentLeft),
-                    top: metrics.y(OtpTokens.otpTop),
-                    width: metrics.s(OtpTokens.contentWidth),
-                    child: AppOtpInput(
-                      boxKeyBuilder: OtpTokens.otpBoxKey,
-                      scale: metrics.scale,
-                      onChanged: (value) => _otpCode = value,
-                    ),
-                  ),
-                  Positioned(
-                    left: metrics.x(OtpTokens.contentLeft),
-                    top: metrics.y(OtpTokens.resendTop),
-                    width: metrics.s(OtpTokens.contentWidth),
-                    child: _ResendText(scale: metrics.scale),
-                  ),
-                  Positioned(
-                    left: metrics.x(OnboardingBottomActionTokens.left),
-                    top: metrics.y(OtpTokens.buttonTop),
-                    child: OnboardingBottomAction(
-                      label: 'verifier',
-                      iconAsset: OnboardingAssets.verifyArrow,
-                      isEnabled: authState.status != AuthStatus.loading,
-                      scale: metrics.scale,
-                      onPressed: _verify,
-                    ),
-                  ),
-                ],
-              );
-            },
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),

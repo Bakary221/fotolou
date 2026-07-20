@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
 import 'package:fotolou/app/theme/app_fonts.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/client/dependency_injection/client_providers.dart';
 import 'package:fotolou/features/client/domain/entities/salon.dart';
@@ -36,7 +37,12 @@ class ClientHomePage extends ConsumerWidget {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 26),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.pageHorizontal,
+              AppSpacing.pageTop,
+              AppSpacing.pageHorizontal,
+              26,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -55,7 +61,12 @@ class ClientHomePage extends ConsumerWidget {
           ),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageHorizontal,
+                0,
+                AppSpacing.pageHorizontal,
+                24,
+              ),
               itemCount: salons.length,
               itemBuilder: (context, index) => _SalonListItem(
                 key: ClientHomeTokens.salonItemKey(index),

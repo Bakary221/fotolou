@@ -5,7 +5,6 @@ import 'package:fotolou/app/routes/pages/home_page.dart';
 import 'package:fotolou/app/routes/pages/not_found_page.dart';
 import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/authentication/domain/entities/user_role.dart';
-import 'package:fotolou/features/authentication/presentation/pages/login_page.dart';
 import 'package:fotolou/features/authentication/presentation/states/auth_state.dart';
 import 'package:fotolou/features/barber/presentation/pages/barber_dashboard_page.dart';
 import 'package:fotolou/features/barber/presentation/pages/barber_profile_page.dart';
@@ -132,9 +131,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HomePage(),
       ),
       GoRoute(
-        path: AppRoute.login.path,
-        name: AppRoute.login.name,
-        builder: (context, state) => const LoginPage(),
+        path: '/login',
+        redirect: (context, state) => AppRoute.phoneLogin.path,
       ),
     ],
     redirect: (context, state) {
@@ -145,16 +143,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         AppRoute.phoneLogin.path,
         AppRoute.otp.path,
       };
-      final isLoggingIn = state.matchedLocation == AppRoute.login.path;
       final isOnboardingRoute = onboardingPaths.contains(state.matchedLocation);
-      final isEntryRoute = isOnboardingRoute || isLoggingIn;
+      final isEntryRoute = isOnboardingRoute;
       final isAuthenticated = authState.isAuthenticated;
       final isResolvingSession =
           authState.status == AuthStatus.initial ||
           authState.status == AuthStatus.loading;
 
       if (isResolvingSession) {
-        return isEntryRoute ? null : AppRoute.login.path;
+        return isEntryRoute ? null : AppRoute.phoneLogin.path;
       }
 
       final user = authState.user;
@@ -166,8 +163,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      if (!isAuthenticated && !isLoggingIn) {
-        return AppRoute.login.path;
+      if (!isAuthenticated && !isOnboardingRoute) {
+        return AppRoute.phoneLogin.path;
       }
 
       if (isAuthenticated && user != null) {
@@ -180,7 +177,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             state.matchedLocation.startsWith(AppRoute.barberHome.path) &&
             user.role != UserRole.barber;
 
-        if (isLoggingIn || isAtRoot || isWrongClientArea || isWrongBarberArea) {
+        if (isAtRoot || isWrongClientArea || isWrongBarberArea) {
           return roleHomePath;
         }
       }

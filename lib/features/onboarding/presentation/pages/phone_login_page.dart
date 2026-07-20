@@ -5,13 +5,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fotolou/app/routes/app_routes.dart';
 import 'package:fotolou/app/theme/app_brand_text_theme.dart';
 import 'package:fotolou/app/theme/app_colors.dart';
+import 'package:fotolou/app/theme/app_spacing.dart';
 import 'package:fotolou/app/theme/app_system_ui.dart';
 import 'package:fotolou/core/validators/app_validators.dart';
 import 'package:fotolou/features/authentication/dependency_injection/auth_providers.dart';
 import 'package:fotolou/features/authentication/presentation/states/auth_state.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/figma_frame.dart';
 import 'package:fotolou/features/onboarding/presentation/widgets/onboarding_assets.dart';
-import 'package:fotolou/shared/widgets/responsive_design_viewport.dart';
+import 'package:fotolou/features/onboarding/presentation/widgets/onboarding_bottom_action.dart';
 import 'package:go_router/go_router.dart';
 
 abstract final class PhoneLoginTokens {
@@ -34,14 +35,8 @@ abstract final class PhoneLoginTokens {
   static const dropdownWidth = 10.6667;
   static const dropdownHeight = 6.0;
   static const placeholderLeft = 125.0;
-  static const submitLeft = 24.0;
-  static const submitTop = 792.0;
-  static const submitWidth = 400.0;
-  static const submitHeight = 73.0;
-  static const submitRadius = 30.0;
   static const legalCenterY = 903.0;
   static const legalWidth = 360.0;
-  static const shadowBlur = 1.0;
 }
 
 class PhoneLoginPage extends ConsumerStatefulWidget {
@@ -68,49 +63,64 @@ class _PhoneLoginPageState extends ConsumerState<PhoneLoginPage> {
       value: AppSystemUi.light,
       child: Scaffold(
         backgroundColor: AppColors.white,
-        body: ResponsiveDesignViewport(
-          child: FigmaFrame(
-            backgroundColor: AppColors.white,
-            builder: (context, metrics) {
-              return Stack(
-                children: [
-                  Positioned(
-                    left: metrics.x(PhoneLoginTokens.headerLeft),
-                    top: metrics.y(PhoneLoginTokens.headerTop),
-                    width: metrics.s(PhoneLoginTokens.headerWidth),
-                    child: _PhoneHeader(scale: metrics.scale),
-                  ),
-                  Positioned(
-                    left: metrics.x(PhoneLoginTokens.formLeft),
-                    top: metrics.y(PhoneLoginTokens.formTop),
-                    width: metrics.s(PhoneLoginTokens.formWidth),
-                    child: _PhoneInput(
-                      controller: _phoneController,
-                      scale: metrics.scale,
-                      onSubmitted: _submit,
+        body: SafeArea(
+          bottom: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: FigmaFrameTokens.width,
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final scale =
+                      ((constraints.maxWidth - AppSpacing.pageHorizontal * 2) /
+                              PhoneLoginTokens.formWidth)
+                          .clamp(0.68, 1.0)
+                          .toDouble();
+                  final isTight = constraints.maxHeight < 560;
+                  final topGap = (constraints.maxHeight * 0.24)
+                      .clamp(isTight ? 28.0 : 96.0, 184.0)
+                      .toDouble();
+                  final fieldGap = isTight ? 14.0 : 20.0;
+                  final legalGap = isTight ? 8.0 : 14.0;
+                  final bottomGap = (constraints.maxHeight * 0.04)
+                      .clamp(12.0, 32.0)
+                      .toDouble();
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.pageHorizontal,
                     ),
-                  ),
-                  Positioned(
-                    left: metrics.x(PhoneLoginTokens.submitLeft),
-                    top: metrics.y(PhoneLoginTokens.submitTop),
-                    child: _PhoneSubmitButton(
-                      scale: metrics.scale,
-                      isLoading: authState.status == AuthStatus.loading,
-                      onPressed: _submit,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: topGap),
+                        _PhoneHeader(scale: scale),
+                        SizedBox(height: fieldGap),
+                        _PhoneInput(
+                          controller: _phoneController,
+                          scale: scale,
+                          onSubmitted: _submit,
+                        ),
+                        const Spacer(),
+                        Center(
+                          child: OnboardingBottomAction(
+                            label: 'Continuer',
+                            isPrimary: true,
+                            isLoading: authState.status == AuthStatus.loading,
+                            scale: scale,
+                            onPressed: _submit,
+                          ),
+                        ),
+                        SizedBox(height: legalGap),
+                        Center(child: _LegalText(scale: scale)),
+                        SizedBox(height: bottomGap),
+                      ],
                     ),
-                  ),
-                  Positioned(
-                    left: metrics.x(
-                      (FigmaFrameTokens.width - PhoneLoginTokens.legalWidth) /
-                          2,
-                    ),
-                    top: metrics.y(PhoneLoginTokens.legalCenterY - 24),
-                    width: metrics.s(PhoneLoginTokens.legalWidth),
-                    child: _LegalText(scale: metrics.scale),
-                  ),
-                ],
-              );
-            },
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ),
@@ -355,68 +365,6 @@ class _PhoneInput extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _PhoneSubmitButton extends StatelessWidget {
-  const _PhoneSubmitButton({
-    required this.scale,
-    required this.onPressed,
-    required this.isLoading,
-  });
-
-  final double scale;
-  final VoidCallback onPressed;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    final brandTextTheme = context.brandTextTheme;
-
-    return SizedBox(
-      width: PhoneLoginTokens.submitWidth * scale,
-      height: PhoneLoginTokens.submitHeight * scale,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(
-            PhoneLoginTokens.submitRadius * scale,
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.shadowBlack05,
-              blurRadius: PhoneLoginTokens.shadowBlur,
-            ),
-          ],
-        ),
-        child: Material(
-          color: AppColors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(
-              PhoneLoginTokens.submitRadius * scale,
-            ),
-            onTap: isLoading ? null : onPressed,
-            child: Center(
-              child: isLoading
-                  ? SizedBox.square(
-                      dimension: 22 * scale,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.white,
-                      ),
-                    )
-                  : Text(
-                      'Continuer',
-                      style: brandTextTheme.phoneSubmit.copyWith(
-                        color: AppColors.white,
-                        fontSize: brandTextTheme.phoneSubmit.fontSize! * scale,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
